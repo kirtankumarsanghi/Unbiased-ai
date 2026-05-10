@@ -1,0 +1,288 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-background text-text-primary font-sans antialiased;
+    min-height: 100vh;
+  }
+
+  ::selection {
+    @apply bg-primary/30 text-white;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-surface;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-border-light;
+  }
+}
+
+@layer components {
+  /* Dashboard layout */
+  .dashboard-layout {
+    @apply flex min-h-screen bg-background;
+  }
+
+  .main-content {
+    @apply flex-1 flex flex-col ml-64;
+  }
+
+  .content-area {
+    @apply flex-1 p-6;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    @apply fixed left-0 top-0 h-full w-64 bg-surface border-r border-border z-40;
+  }
+
+  /* Topbar */
+  .topbar {
+    @apply sticky top-0 h-16 bg-surface/80 backdrop-blur-sm border-b border-border z-30 px-6 flex items-center justify-between;
+  }
+
+  /* Page container */
+  .page-container {
+    @apply max-w-7xl mx-auto;
+  }
+
+  /* Section header */
+  .section-header {
+    @apply text-3xl font-bold text-text-primary mb-2;
+  }
+
+  .section-subtitle {
+    @apply text-muted text-lg mb-8;
+  }
+
+  /* Terminal log */
+  .terminal-log {
+    @apply bg-surface border border-border p-6 font-mono text-sm overflow-auto max-h-80;
+  }
+
+  .terminal-line {
+    @apply py-1;
+  }
+
+  .terminal-timestamp {
+    @apply text-muted mr-4;
+  }
+
+  .terminal-level-info {
+    @apply text-info;
+  }
+
+  .terminal-level-warn {
+    @apply text-warning;
+  }
+
+  .terminal-level-error {
+    @apply text-error;
+  }
+
+  .terminal-level-system {
+    @apply text-secondary;
+  }
+
+  .terminal-level-action {
+    @apply text-primary;
+  }
+
+  /* Cyber button */
+  .cyber-btn {
+    @apply relative px-6 py-3 bg-primary text-background font-semibold uppercase tracking-wider;
+    @apply transition-all duration-200 hover:bg-primary-dark hover:shadow-glow;
+    @apply border-none cursor-pointer;
+  }
+
+  .cyber-btn:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+
+  .cyber-btn-outline {
+    @apply bg-transparent border border-primary text-primary;
+    @apply hover:bg-primary/10;
+  }
+
+  .cyber-btn-secondary {
+    @apply bg-secondary text-background hover:shadow-glow-blue;
+  }
+
+  .cyber-btn-danger {
+    @apply bg-error text-white hover:shadow-glow-error;
+  }
+
+  /* Cards */
+  .cyber-card {
+    @apply bg-surface border border-border p-6;
+    @apply transition-all duration-200 hover:border-primary/50;
+  }
+
+  .cyber-card-elevated {
+    @apply bg-surface-elevated;
+  }
+
+  /* KPI Grid */
+  .kpi-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6;
+  }
+
+  .kpi-card {
+    @apply cyber-card;
+  }
+
+  .kpi-value {
+    @apply text-4xl font-bold text-primary mb-2;
+  }
+
+  .kpi-label {
+    @apply text-muted text-sm uppercase tracking-wider;
+  }
+
+  .kpi-trend {
+    @apply text-sm mt-2;
+  }
+
+  .kpi-trend-up {
+    @apply text-success;
+  }
+
+  .kpi-trend-down {
+    @apply text-error;
+  }
+
+  /* Hero section */
+  .hero-section {
+    @apply mb-10;
+  }
+
+  .hero-title {
+    @apply text-4xl md:text-5xl font-bold mb-4;
+  }
+
+  .hero-subtitle {
+    @apply text-xl text-muted max-w-2xl;
+  }
+
+  /* Tables */
+  .models-table {
+    @apply w-full border-collapse;
+  }
+
+  .models-table th {
+    @apply text-left px-4 py-3 text-sm font-semibold text-muted uppercase tracking-wider border-b border-border bg-surface;
+  }
+
+  .models-table td {
+    @apply px-4 py-4 border-b border-border;
+  }
+
+  .models-table tr:hover {
+    @apply bg-surface-elevated;
+  }
+
+  /* Status badges */
+  .status-badge {
+    @apply inline-flex items-center px-3 py-1 text-xs font-semibold uppercase tracking-wider;
+  }
+
+  .status-safe {
+    @apply bg-success/20 text-success border border-success/30;
+  }
+
+  .status-warning {
+    @apply bg-warning/20 text-warning border border-warning/30;
+  }
+
+  .status-critical {
+    @apply bg-error/20 text-error border border-error/30;
+  }
+
+  /* Chart containers */
+  .chart-container {
+    @apply cyber-card min-h-[300px];
+  }
+
+  .chart-title {
+    @apply text-lg font-semibold text-text-primary mb-4;
+  }
+
+  /* Fairness bar chart */
+  .fairness-bar-chart {
+    @apply chart-container;
+  }
+
+  .bias-trend-chart {
+    @apply chart-container;
+  }
+
+  /* Nav links */
+  .nav-link {
+    @apply flex items-center gap-3 px-4 py-3 text-muted hover:text-text-primary hover:bg-surface-elevated;
+    @apply transition-colors duration-150;
+  }
+
+  .nav-link-active {
+    @apply text-primary bg-primary/10 border-r-2 border-primary;
+  }
+
+  /* Form inputs */
+  .form-input {
+    @apply w-full bg-background border border-border px-4 py-3;
+    @apply outline-none focus:border-primary transition-colors duration-150;
+    @apply text-text-primary placeholder-muted;
+  }
+
+  .form-label {
+    @apply block text-sm mb-2 text-muted uppercase tracking-widest;
+  }
+
+  /* Animations */
+  .animate-in {
+    @apply animate-fade-in;
+  }
+
+  .slide-in {
+    @apply animate-slide-up;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent;
+  }
+
+  .border-gradient {
+    border-image: linear-gradient(to right, theme("colors.primary"), theme("colors.secondary")) 1;
+  }
+
+  .glow {
+    @apply shadow-glow;
+  }
+
+  .glow-blue {
+    @apply shadow-glow-blue;
+  }
+}

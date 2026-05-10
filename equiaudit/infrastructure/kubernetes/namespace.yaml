@@ -1,0 +1,5 @@
+# Kubernetes namespace configuration
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: equiaudit

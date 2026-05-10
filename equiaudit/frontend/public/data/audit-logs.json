@@ -1,0 +1,22 @@
+[
+  {
+    "timestamp": "08:42:12",
+    "level": "SYSTEM",
+    "message": "Model ingestion complete"
+  },
+  {
+    "timestamp": "08:42:15",
+    "level": "EVAL",
+    "message": "Calculating demographic parity"
+  },
+  {
+    "timestamp": "08:42:18",
+    "level": "WARN",
+    "message": "Disparate impact detected"
+  },
+  {
+    "timestamp": "08:42:20",
+    "level": "ACT",
+    "message": "Triggering intervention protocol"
+  }
+]

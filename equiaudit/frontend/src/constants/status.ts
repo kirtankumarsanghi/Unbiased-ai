@@ -1,0 +1,18 @@
+// Status constants
+export const STATUS = {
+  SAFE: "SAFE",
+
+  WARNING: "WARNING",
+
+  CRITICAL: "CRITICAL",
+
+  ACTIVE: "ACTIVE",
+
+  INACTIVE: "INACTIVE",
+
+  PENDING: "PENDING",
+
+  FAILED: "FAILED",
+
+  SUCCESS: "SUCCESS",
+};
