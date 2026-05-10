@@ -1,0 +1,49 @@
+/* Utility classes */
+.shadow-glow {
+  box-shadow:
+    0 0 8px rgba(0, 223, 193, 0.4);
+}
+
+.shadow-glow-lg {
+  box-shadow:
+    0 0 16px rgba(0, 223, 193, 0.6);
+}
+
+.border-cyber {
+  border:
+    1px solid rgba(0, 223, 193, 0.2);
+}
+
+.text-muted {
+  color: var(--muted);
+}
+
+.text-primary {
+  color: var(--primary);
+}
+
+.bg-surface {
+  background: var(--surface);
+}
+
+.bg-surface-light {
+  background: var(--surface-light);
+}
+
+.bg-background {
+  background: var(--background);
+}
+
+.border-border {
+  border-color: var(--border);
+}
+
+.bg-grid-pattern {
+  background-image:
+    radial-gradient(
+      rgba(255, 255, 255, 0.03) 1px,
+      transparent 1px
+    );
+
+  background-size: 8px 8px;
+}

@@ -1,0 +1,42 @@
+# Kubernetes Celery worker deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-worker
+  namespace: equiaudit
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: celery-worker
+
+  template:
+    metadata:
+      labels:
+        app: celery-worker
+
+    spec:
+      containers:
+        - name: celery-worker
+
+          image: equiaudit/backend:latest
+
+          command:
+            - celery
+
+            - -A
+
+            - app.workers.celery_app.celery
+
+            - worker
+
+            - --loglevel=info
+
+          env:
+            - name: REDIS_URL
+              value: redis://redis:6379
+
+            - name: DATABASE_URL
+              value: postgresql://postgres:postgres@postgres:5432/equiaudit

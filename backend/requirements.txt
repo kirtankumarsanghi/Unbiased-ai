@@ -1,0 +1,17 @@
+# Python dependencies
+fastapi
+uvicorn[standard]
+sqlalchemy
+pydantic
+pydantic-settings
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+alembic
+psycopg2-binary
+redis
+celery
+shap
+numpy
+pandas
+scikit-learn
