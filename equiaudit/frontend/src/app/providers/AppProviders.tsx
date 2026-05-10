@@ -2,6 +2,8 @@ import React, { useEffect } from "react";
 import { QueryProvider } from "./QueryProvider";
 import { ThemeProvider } from "./ThemeProvider";
 import { useAuthStore } from "../store/auth.store";
+import NotificationCenter from "../../components/common/NotificationCenter";
+import ToastCenter from "../../components/common/ToastCenter";
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -16,7 +18,11 @@ const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
 
   return (
     <QueryProvider>
-      <ThemeProvider>{children}</ThemeProvider>
+      <ThemeProvider>
+        {children}
+        <NotificationCenter />
+        <ToastCenter />
+      </ThemeProvider>
     </QueryProvider>
   );
 };

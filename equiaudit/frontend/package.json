@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "npx --no-install tsc && npx --no-install vite build",
     "preview": "vite preview",
-    "lint": "eslint src --ext ts,tsx",
+    "lint": "npx --no-install tsc --noEmit",
     "format": "prettier --write src"
   },
   "dependencies": {

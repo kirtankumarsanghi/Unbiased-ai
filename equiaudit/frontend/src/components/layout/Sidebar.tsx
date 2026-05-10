@@ -1,54 +1,16 @@
 import { Link, useLocation } from "react-router-dom";
-import {
-  Activity,
-  Brain,
-  Gauge,
-  Scale,
-  FileBarChart,
-  Settings,
-  Bell,
-} from "lucide-react";
-
-const items = [
-  {
-    label: "Dashboard",
-    path: "/dashboard",
-    icon: Activity,
-  },
-  {
-    label: "Models",
-    path: "/dashboard/models",
-    icon: Brain,
-  },
-  {
-    label: "Audits",
-    path: "/dashboard/audits",
-    icon: Gauge,
-  },
-  {
-    label: "Interventions",
-    path: "/dashboard/interventions",
-    icon: Scale,
-  },
-  {
-    label: "Reports",
-    path: "/dashboard/reports",
-    icon: FileBarChart,
-  },
-  {
-    label: "Alerts",
-    path: "/dashboard/alerts",
-    icon: Bell,
-  },
-  {
-    label: "Settings",
-    path: "/dashboard/settings",
-    icon: Settings,
-  },
-];
+import { NAVIGATION } from "../../constants/navigation";
+import { useAuthStore } from "../../app/store/auth.store";
 
 export default function Sidebar() {
   const location = useLocation();
+  const role = useAuthStore(
+    (state) => state.user?.role
+  );
+
+  const items = NAVIGATION.filter((item) =>
+    item.allowedRoles.includes(role || "")
+  );
 
   return (
     <aside className="w-[280px] min-h-screen bg-surface border-r border-border hidden lg:flex flex-col">
@@ -73,7 +35,7 @@ export default function Sidebar() {
             <Link
               key={item.path}
               to={item.path}
-              className={`flex items-center gap-3 px-4 py-3 border transition-all duration-200 uppercase tracking-widest text-xs
+            className={`flex items-center gap-3 px-4 py-3 border transition-all duration-200 uppercase tracking-widest text-xs
               
               ${
                 active

@@ -1,148 +1,246 @@
 # EquiAudit
 
-Enterprise-focused AI fairness auditing and accountability platform.
-
-EquiAudit provides a cyber-style control center for monitoring model fairness, running audits, generating reports, and tracking intervention protocols across high-stakes AI domains.
+EquiAudit is a full-stack AI fairness auditing platform with a cyber-style operations dashboard.
+It helps teams monitor model behavior, run fairness audits, manage interventions, and generate compliance-style reports.
 
 ## Table of Contents
-- [Overview](#overview)
-- [Core Features](#core-features)
-- [Architecture](#architecture)
+- [What This Project Does](#what-this-project-does)
 - [Tech Stack](#tech-stack)
-- [Repository Structure](#repository-structure)
-- [Getting Started](#getting-started)
-- [Configuration](#configuration)
-- [Runbook](#runbook)
-- [API Reference](#api-reference)
-- [WebSocket and Metrics](#websocket-and-metrics)
-- [Docker and Infrastructure](#docker-and-infrastructure)
-- [Testing and Quality](#testing-and-quality)
-- [Troubleshooting](#troubleshooting)
-- [Current Implementation Notes](#current-implementation-notes)
-- [Roadmap Suggestions](#roadmap-suggestions)
-- [License](#license)
+- [System Architecture](#system-architecture)
+- [How The Website Works](#how-the-website-works)
+- [Backend API Overview](#backend-api-overview)
+- [Project Structure](#project-structure)
+- [Prerequisites](#prerequisites)
+- [Environment Configuration](#environment-configuration)
+- [Run The Project](#run-the-project)
+- [Testing](#testing)
+- [Docker and Deployment Assets](#docker-and-deployment-assets)
+- [Current State and Limitations](#current-state-and-limitations)
+- [Roadmap Ideas](#roadmap-ideas)
 
-## Overview
-EquiAudit is a full-stack platform built to support:
-- fairness monitoring for ML systems
-- intervention lifecycle management
-- explainability and accountability workflows
-- regulatory-style reporting interfaces
+## What This Project Does
+EquiAudit provides:
+- model registry operations (list, upload, fetch, delete)
+- audit execution and fairness metric retrieval
+- intervention enable/disable workflows
+- compliance report generation and download
+- alert and audit-log monitoring views
+- websocket channel for real-time messaging (`/ws`)
+- Prometheus scrape endpoint (`/metrics`)
 
-Primary use cases:
-- hiring systems
-- lending decisions
-- healthcare risk prediction
-- legal risk scoring
-- enterprise predictive analytics
-
-## Core Features
-- JWT-based authentication flow
-- model registry and model lifecycle endpoints
-- fairness audit triggers and metrics retrieval
-- intervention protocol activation/deactivation
-- report generation and download
-- alert stream and audit logs
-- real-time channel via WebSocket endpoint
-- Prometheus-compatible health metric endpoint
-
-## Architecture
-High-level flow:
-1. React frontend calls FastAPI REST APIs (`/api/v1/*`).
-2. Backend serves data from service/route layers.
-3. Redis and Celery are available for async workloads.
-4. PostgreSQL is defined for persistence.
-5. WebSocket endpoint (`/ws`) supports live broadcast.
-6. Prometheus scrapes `/metrics`.
+Primary use cases include fairness monitoring in domains like hiring, lending, healthcare, and risk scoring.
 
 ## Tech Stack
+
 ### Frontend
 - React 18
 - TypeScript
 - Vite
-- TailwindCSS
-- React Query
+- Tailwind CSS
+- TanStack React Query
 - Zustand
 - Axios
 - Recharts
+- Framer Motion
 
 ### Backend
 - FastAPI
-- SQLAlchemy
 - Pydantic
+- SQLAlchemy (models/repository scaffolding present)
 - Alembic
-- PostgreSQL (configured)
+- PostgreSQL (configured in infra)
 - Redis
 - Celery
-- SHAP / scikit-learn / pandas / numpy
+- python-jose + passlib for token/security utilities
+- ML libraries included: NumPy, Pandas, scikit-learn, SHAP
 
-### Infrastructure
+### Infrastructure / Ops
 - Docker Compose
-- Kubernetes manifests
-- NGINX reverse proxy
-- Prometheus + Grafana scaffolding
+- NGINX reverse proxy container
+- Kubernetes manifests (`infrastructure/kubernetes`)
+- Prometheus config
+- Grafana dashboard JSON
 
-## Repository Structure
+## System Architecture
+High-level flow:
+1. User interacts with React UI (`frontend`).
+2. UI calls REST APIs under `http://localhost:8000/api/v1`.
+3. FastAPI routes process requests and currently rely mainly on in-memory state from `backend/app/data/store.py`.
+4. WebSocket endpoint `/ws` supports broadcast-style real-time messages.
+5. `/metrics` exposes a Prometheus-compatible plain-text metric payload.
+6. Docker/K8s assets provide runtime/deployment scaffolding for Postgres, Redis, backend, frontend, and proxying.
+
+## How The Website Works
+
+### 1) Routing and access control
+- Public routes:
+  - `/` landing page
+  - `/login` login page
+- Protected routes (via `ProtectedRoute` + Zustand auth store token):
+  - `/dashboard`
+  - `/dashboard/models`
+  - `/dashboard/audits`
+  - `/dashboard/interventions`
+  - `/dashboard/reports`
+  - `/dashboard/alerts`
+  - `/dashboard/settings`
+
+### 2) Authentication flow
+- Login form calls `POST /api/v1/auth/login`.
+- Backend returns bearer token (`access_token`).
+- Token is stored by frontend token service and attached to outgoing Axios requests.
+- On `401`, frontend clears session and redirects to `/login`.
+
+Note: current backend login is prototype logic that accepts any non-empty email/password.
+
+### 3) Dashboard behavior
+- Dashboard uses React Query to fetch audit logs from `GET /api/v1/audit-logs/`.
+- KPI-style cards and audit terminal feed are rendered from API data.
+
+### 4) Models workflow
+- Fetch models: `GET /api/v1/models/`
+- Upload model: `POST /api/v1/models/upload` (multipart form-data)
+- View model details: `GET /api/v1/models/{id}`
+- Delete model: `DELETE /api/v1/models/{id}`
+
+### 5) Audits workflow
+- Run audit for a model: `POST /api/v1/audits/run/{model_id}`
+- Fetch audit metrics: `GET /api/v1/audits/{audit_id}/metrics`
+- Metrics currently include demographic parity, equalized odds, and disparate impact.
+
+### 6) Interventions workflow
+- List interventions: `GET /api/v1/interventions/`
+- Enable intervention: `POST /api/v1/interventions/{model_id}/enable`
+- Disable intervention: `POST /api/v1/interventions/{model_id}/disable`
+- Preview impact: `GET /api/v1/interventions/{model_id}/preview`
+
+### 7) Reports workflow
+- List reports: `GET /api/v1/reports/`
+- Generate report: `POST /api/v1/reports/generate`
+- Download report: `GET /api/v1/reports/{report_id}/download`
+
+### 8) Alerts and metrics workflow
+- Alerts: `GET /api/v1/alerts/`
+- Update thresholds: `POST /api/v1/alerts/thresholds`
+- Summary cards data: `GET /api/v1/metrics/summary`
+- Infrastructure metric endpoint: `GET /metrics`
+
+### 9) Real-time channel
+- WebSocket endpoint: `ws://localhost:8000/ws`
+- Current behavior: broadcast incoming text messages to all connected clients.
+
+## Backend API Overview
+Base path: `/api/v1`
+
+- Auth: `/auth/login`, `/auth/refresh`
+- Users: `/users/me`
+- Models: `/models`, `/models/{id}`, `/models/upload`
+- Audits: `/audits/run/{model_id}`, `/audits/{audit_id}/metrics`
+- Interventions: `/interventions/*`
+- Reports: `/reports/*`
+- Alerts: `/alerts/*`
+- Audit Logs: `/audit-logs/`
+- Summary Metrics: `/metrics/summary`
+
+Interactive docs:
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
+
+## Project Structure
+
 ```text
 equiaudit/
-  backend/                 # FastAPI application and workers
+  backend/
     app/
-      api/                # Routers and route handlers
-      core/               # Config/security/db/websocket primitives
-      data/               # In-memory store (current implementation path)
-      models/             # SQLAlchemy models
-      repositories/       # Repository layer scaffolding
-      schemas/            # Pydantic schemas
-      services/           # Business/service modules
-      workers/            # Celery app and tasks
-    alembic/              # Migration scaffolding
+      api/               # FastAPI routers and route modules
+      core/              # config, security, db/websocket primitives
+      data/store.py      # in-memory state used by active routes
+      models/            # SQLAlchemy models (scaffolding)
+      repositories/      # repository scaffolding
+      schemas/           # Pydantic schemas
+      services/          # fairness/auth/report/etc service modules
+      workers/           # Celery app/tasks
+    tests/               # backend tests
     requirements.txt
-  frontend/               # React + TypeScript app
+    Dockerfile
+  frontend/
     src/
-      app/                # providers/router/store
-      components/
-      pages/
-      services/
-      hooks/
-      constants/
-      styles/
-  infrastructure/         # nginx/k8s/prometheus/grafana assets
+      app/               # router/providers/stores
+      pages/             # route-level UI screens
+      components/        # reusable UI units
+      services/          # API/auth/websocket clients
+      hooks/             # custom hooks
+      constants/         # shared constants and endpoint config
+      styles/            # global/theme/animation styles
+    public/              # static assets
+    package.json
+  infrastructure/
+    kubernetes/
+    nginx/
+    prometheus/
+    grafana/
   docker-compose.yml
   setup.bat
+  quick-start.bat
   start-all.bat
-  start-backend.bat
-  start-frontend.bat
-  check-system.bat
 ```
 
-## Getting Started
-
-### Prerequisites
+## Prerequisites
 - Python 3.11+
 - Node.js 18+
 - npm
 - Docker Desktop (recommended)
 
-### Option A: One-command setup (Windows)
-From `equiaudit/`:
-```bat
-setup.bat
+## Environment Configuration
+
+### Backend (`backend/.env`)
+
+```env
+APP_NAME=EquiAudit
+APP_VERSION=4.2.0
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/equiaudit
+SECRET_KEY=your-secret-key
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+REDIS_URL=redis://localhost:6379
 ```
 
-Then start everything:
+### Frontend (`frontend/.env`)
+
+```env
+VITE_API_BASE_URL=http://localhost:8000/api/v1
+VITE_WS_URL=ws://localhost:8000/ws
+VITE_APP_NAME=EquiAudit
+VITE_APP_VERSION=4.2.0
+```
+
+## Run The Project
+
+### Option A: Windows helper scripts
+From `equiaudit/`:
+
+```bat
+check-system.bat
+setup.bat
+quick-start.bat
+```
+
+Or directly:
+
 ```bat
 start-all.bat
 ```
 
-### Option B: Manual startup
-From `equiaudit/`:
+### Option B: Manual local run
 
-1. Start infra:
+1. Start infra services:
+
 ```bash
 docker-compose up -d postgres redis
 ```
 
 2. Start backend:
+
 ```bash
 cd backend
 python -m venv venv
@@ -152,181 +250,74 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 3. Start frontend (new terminal):
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-### Service URLs
+### Local URLs
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:8000`
-- OpenAPI docs: `http://localhost:8000/docs`
+- API docs: `http://localhost:8000/docs`
 - WebSocket: `ws://localhost:8000/ws`
 
-## Configuration
-
-### Backend (`backend/.env`)
-```env
-APP_NAME=EquiAudit
-APP_VERSION=4.2.0
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/equiaudit
-SECRET_KEY=super-secret-key
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=60
-REDIS_URL=redis://localhost:6379
-```
-
-### Frontend (`frontend/.env`)
-```env
-VITE_API_BASE_URL=http://localhost:8000/api/v1
-VITE_WS_URL=ws://localhost:8000/ws
-VITE_APP_NAME=EquiAudit
-VITE_APP_VERSION=4.2.0
-```
-
-## Runbook
-
-### Start checks
-```bat
-check-system.bat
-```
-
-### Backend dev
-```bash
-cd backend
-venv\Scripts\activate
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-### Frontend dev
-```bash
-cd frontend
-npm run dev
-```
-
-### Build frontend
-```bash
-cd frontend
-npm run build
-```
-
-## API Reference
-Base prefix: `/api/v1`
-
-### Auth
-- `POST /auth/login`
-- `POST /auth/refresh`
-
-### Users
-- `GET /users/me`
-
-### Models
-- `GET /models`
-- `GET /models/{model_id}`
-- `POST /models/upload`
-- `DELETE /models/{model_id}`
-
-### Audits
-- `POST /audits/run/{model_id}`
-- `GET /audits/{audit_id}/metrics`
-
-### Interventions
-- `GET /interventions`
-- `POST /interventions/{model_id}/enable`
-- `POST /interventions/{model_id}/disable`
-- `GET /interventions/{model_id}/preview`
-
-### Reports
-- `GET /reports`
-- `POST /reports/generate`
-- `GET /reports/{report_id}/download`
-
-### Alerts and Metrics
-- `GET /alerts`
-- `POST /alerts/thresholds`
-- `GET /audit-logs`
-- `GET /metrics/summary`
-
-## WebSocket and Metrics
-- WebSocket endpoint: `/ws`
-- Prometheus scrape endpoint: `/metrics`
-
-Current metric payload includes a basic `equiaudit_up` gauge.
-
-## Docker and Infrastructure
-
-### Compose services
-Defined in `docker-compose.yml`:
-- `frontend`
-- `backend`
-- `postgres`
-- `redis`
-- `nginx`
-
-### Kubernetes manifests
-Located in `infrastructure/kubernetes`:
-- namespace
-- backend/frontend deployments + services
-- postgres + redis
-- celery worker
-- ingress
-
-### Monitoring assets
-- Prometheus config: `infrastructure/prometheus/prometheus.yml`
-- Grafana dashboard JSON: `infrastructure/grafana/dashboards/equiaudit-dashboard.json`
-
-## Testing and Quality
+## Testing
 
 ### Backend tests
+
 ```bash
 cd backend
 python -m pytest
 ```
 
-### Frontend type/build checks
+### Frontend build check
+
 ```bash
 cd frontend
 npm run build
 ```
 
-### Recommended additions
-- backend linting (`ruff`/`flake8`)
-- frontend unit tests (Vitest + RTL)
-- e2e tests (Playwright)
-- CI pipeline for build + test + security checks
+There is also a Windows validation script:
 
-## Troubleshooting
-
-### Backend not reachable from frontend
-- verify backend is running on `:8000`
-- verify `frontend/.env` API URL matches backend
-- restart Vite after env changes
-
-### Docker service issues
-```bash
-docker-compose ps
-docker-compose logs -f
+```bat
+test-installation.bat
 ```
 
-### Port conflict
-- `5173` (frontend), `8000` (backend), `5432` (Postgres), `6379` (Redis)
+## Docker and Deployment Assets
 
-### Python dependencies fail
-- recreate venv
-- ensure pip/setuptools are updated
+### Docker Compose services
+Defined in `docker-compose.yml`:
+- frontend
+- backend
+- postgres
+- redis
+- nginx
 
-## Current Implementation Notes
-- The platform includes both scaffolded enterprise architecture and active prototype pathways.
-- Several backend feature flows currently rely on in-memory data in `backend/app/data/store.py`.
-- SQLAlchemy/Celery/SHAP modules are present and ready for deeper production integration.
+### Kubernetes manifests
+Available in `infrastructure/kubernetes`:
+- namespace
+- backend/frontend deployments and services
+- postgres
+- redis
+- celery worker
+- ingress
 
-## Roadmap Suggestions
-- move all routes to repository/service + DB-backed persistence
-- implement full fairness metric pipeline against real model outputs
-- implement authenticated WebSocket channels
-- expand Prometheus/Grafana dashboards with business and model KPIs
-- enforce RBAC and stricter security policies for production
+### Monitoring assets
+- Prometheus config: `infrastructure/prometheus/prometheus.yml`
+- Grafana dashboard: `infrastructure/grafana/dashboards/equiaudit-dashboard.json`
 
-## License
-Add your preferred license (MIT/Apache-2.0/etc.) and include a `LICENSE` file.
+## Current State and Limitations
+- The API architecture is production-style, but many active routes currently use in-memory data from `backend/app/data/store.py`.
+- Auth is currently simplified prototype logic.
+- SQLAlchemy models, repositories, fairness service modules, Celery, and explainability modules are present as scaffolding/extension points.
+- `GET /metrics` currently returns a minimal `equiaudit_up` gauge.
+
+## Roadmap Ideas
+- Replace memory store with full PostgreSQL-backed persistence.
+- Add strict credential validation and role-based authorization.
+- Wire fairness services to real model outputs/datasets.
+- Add authenticated/typed WebSocket event channels.
+- Expand Prometheus/Grafana with business and model-health KPIs.
+- Add CI pipeline for linting, tests, and deployment checks.

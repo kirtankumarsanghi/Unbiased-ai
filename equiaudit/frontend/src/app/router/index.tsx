@@ -1,16 +1,36 @@
+import { lazy } from "react";
 import { createBrowserRouter } from "react-router-dom";
 
-import LandingPage from "../../pages/landing/LandingPage";
-import LoginPage from "../../pages/auth/LoginPage";
-import DashboardPage from "../../pages/dashboard/DashboardPage";
-import ModelsPage from "../../pages/models/ModelsPage";
-import AuditsPage from "../../pages/audits/AuditsPage";
-import InterventionsPage from "../../pages/interventions/InterventionsPage";
-import ReportsPage from "../../pages/reports/ReportsPage";
-import AlertsPage from "../../pages/alerts/AlertsPage";
-import SettingsPage from "../../pages/settings/SettingsPage";
-
 import ProtectedRoute from "./ProtectedRoute";
+import RBACRoute from "./RBACRoute";
+
+const LandingPage = lazy(
+  () => import("../../pages/landing/LandingPage")
+);
+const LoginPage = lazy(
+  () => import("../../pages/auth/LoginPage")
+);
+const DashboardPage = lazy(
+  () => import("../../pages/dashboard/DashboardPage")
+);
+const ModelsPage = lazy(
+  () => import("../../pages/models/ModelsPage")
+);
+const AuditsPage = lazy(
+  () => import("../../pages/audits/AuditsPage")
+);
+const InterventionsPage = lazy(
+  () => import("../../pages/interventions/InterventionsPage")
+);
+const ReportsPage = lazy(
+  () => import("../../pages/reports/ReportsPage")
+);
+const AlertsPage = lazy(
+  () => import("../../pages/alerts/AlertsPage")
+);
+const SettingsPage = lazy(
+  () => import("../../pages/settings/SettingsPage")
+);
 
 export const router = createBrowserRouter([
   {
@@ -25,7 +45,9 @@ export const router = createBrowserRouter([
     path: "/dashboard",
     element: (
       <ProtectedRoute>
-        <DashboardPage />
+        <RBACRoute route="/dashboard">
+          <DashboardPage />
+        </RBACRoute>
       </ProtectedRoute>
     ),
   },
@@ -33,7 +55,9 @@ export const router = createBrowserRouter([
     path: "/dashboard/models",
     element: (
       <ProtectedRoute>
-        <ModelsPage />
+        <RBACRoute route="/dashboard/models">
+          <ModelsPage />
+        </RBACRoute>
       </ProtectedRoute>
     ),
   },
@@ -41,7 +65,9 @@ export const router = createBrowserRouter([
     path: "/dashboard/audits",
     element: (
       <ProtectedRoute>
-        <AuditsPage />
+        <RBACRoute route="/dashboard/audits">
+          <AuditsPage />
+        </RBACRoute>
       </ProtectedRoute>
     ),
   },
@@ -49,7 +75,9 @@ export const router = createBrowserRouter([
     path: "/dashboard/interventions",
     element: (
       <ProtectedRoute>
-        <InterventionsPage />
+        <RBACRoute route="/dashboard/interventions">
+          <InterventionsPage />
+        </RBACRoute>
       </ProtectedRoute>
     ),
   },
@@ -57,7 +85,9 @@ export const router = createBrowserRouter([
     path: "/dashboard/reports",
     element: (
       <ProtectedRoute>
-        <ReportsPage />
+        <RBACRoute route="/dashboard/reports">
+          <ReportsPage />
+        </RBACRoute>
       </ProtectedRoute>
     ),
   },
@@ -65,7 +95,9 @@ export const router = createBrowserRouter([
     path: "/dashboard/alerts",
     element: (
       <ProtectedRoute>
-        <AlertsPage />
+        <RBACRoute route="/dashboard/alerts">
+          <AlertsPage />
+        </RBACRoute>
       </ProtectedRoute>
     ),
   },
@@ -73,7 +105,9 @@ export const router = createBrowserRouter([
     path: "/dashboard/settings",
     element: (
       <ProtectedRoute>
-        <SettingsPage />
+        <RBACRoute route="/dashboard/settings">
+          <SettingsPage />
+        </RBACRoute>
       </ProtectedRoute>
     ),
   },
