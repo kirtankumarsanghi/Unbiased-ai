@@ -8,7 +8,9 @@ from app.api.routes import (
     interventions,
     reports,
     alerts,
-    users
+    users,
+    audit_logs,
+    metrics
 )
 
 api_router = APIRouter()
@@ -47,6 +49,18 @@ api_router.include_router(
     alerts.router,
     prefix="/alerts",
     tags=["Alerts"]
+)
+
+api_router.include_router(
+    audit_logs.router,
+    prefix="/audit-logs",
+    tags=["Audit Logs"]
+)
+
+api_router.include_router(
+    metrics.router,
+    prefix="/metrics",
+    tags=["Metrics"]
 )
 
 api_router.include_router(

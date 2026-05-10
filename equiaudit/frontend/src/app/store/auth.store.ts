@@ -1,6 +1,9 @@
 // Auth store logic
 import { create } from "zustand";
 
+import { STORAGE_KEYS } from "../../constants/storage";
+import { tokenService } from "../../services/auth/token.service";
+
 interface User {
   id: string;
   name: string;
@@ -24,8 +27,11 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
 
   setAuth: (token, user) => {
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
+    tokenService.setAccessToken(token);
+    localStorage.setItem(
+      STORAGE_KEYS.USER,
+      JSON.stringify(user)
+    );
 
     set({
       token,
@@ -34,6 +40,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: () => {
+    tokenService.clearTokens();
+    localStorage.removeItem(STORAGE_KEYS.USER);
     localStorage.removeItem("token");
     localStorage.removeItem("user");
 
@@ -44,13 +52,28 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   restoreSession: () => {
-    const token = localStorage.getItem("token");
-    const user = localStorage.getItem("user");
+    const legacyToken = localStorage.getItem("token");
+    const legacyUser = localStorage.getItem("user");
 
-    if (token && user) {
+    let token = tokenService.getAccessToken();
+    let user = localStorage.getItem(STORAGE_KEYS.USER);
+
+    if (!token && legacyToken) {
+      tokenService.setAccessToken(legacyToken);
+      localStorage.removeItem("token");
+      token = legacyToken;
+    }
+
+    if (!user && legacyUser) {
+      localStorage.setItem(STORAGE_KEYS.USER, legacyUser);
+      localStorage.removeItem("user");
+      user = legacyUser;
+    }
+
+    if (token) {
       set({
         token,
-        user: JSON.parse(user),
+        user: user ? JSON.parse(user) : null,
       });
     }
   },

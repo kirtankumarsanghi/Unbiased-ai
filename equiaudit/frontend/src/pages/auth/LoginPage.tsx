@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { isAxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
 
 import CyberButton from "../../components/common/CyberButton";
@@ -16,6 +17,11 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      setError("Email and password are required.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -31,7 +37,19 @@ export default function LoginPage() {
 
       navigate("/dashboard", { replace: true });
     } catch (err) {
-      setError("Login failed. Check credentials.");
+      if (isAxiosError(err)) {
+        if (!err.response) {
+          setError("Backend is unreachable. Start the API server.");
+        } else {
+          const detail =
+            (err.response.data as { detail?: string })
+              ?.detail || "Login failed. Check credentials.";
+
+          setError(detail);
+        }
+      } else {
+        setError("Login failed. Check credentials.");
+      }
     } finally {
       setLoading(false);
     }

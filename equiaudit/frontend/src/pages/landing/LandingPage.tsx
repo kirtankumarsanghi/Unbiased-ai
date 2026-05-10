@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+
 import CyberButton from "../../components/common/CyberButton";
 import AuditTicker from "../../components/dashboard/AuditTicker";
 
@@ -28,6 +30,8 @@ const overviewItems = [
 ];
 
 export default function LandingPage() {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-background text-text">
       <section className="relative overflow-hidden border-b border-border">
@@ -49,7 +53,9 @@ export default function LandingPage() {
           </p>
 
           <div className="mt-10 flex flex-wrap gap-4">
-            <CyberButton>Enter Command Center</CyberButton>
+            <CyberButton onClick={() => navigate("/login")}>
+              Enter Command Center
+            </CyberButton>
             <CyberButton className="border-warning/60 text-warning bg-warning/10 hover:bg-warning/20">
               Request Demo
             </CyberButton>

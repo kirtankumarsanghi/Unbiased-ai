@@ -1,9 +1,7 @@
 {
-  "name": "EquiAudit App",
+  "name": "EquiAudit",
   "short_name": "EquiAudit",
-  "start_url": ".",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "description": "EquiAudit platform",
-  "icons": []
+  "theme_color": "#00dfc1",
+  "background_color": "#0d1513",
+  "display": "standalone"
 }

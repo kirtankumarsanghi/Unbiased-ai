@@ -1,16 +1,37 @@
-# Audits route
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
+
+from app.data.store import store
 
 router = APIRouter()
 
 
-@router.get("/{audit_id}/metrics")
-def get_metrics(
-    audit_id: int
-):
+@router.post("/run/{model_id}")
+def run_audit(model_id: int):
+    if not store.get_model(model_id):
+        raise HTTPException(status_code=404, detail="Model not found")
+
+    audit = store.create_audit(model_id)
+
     return {
-        "audit_id": audit_id,
-        "demographic_parity": 0.94,
-        "equalized_odds": 0.91,
-        "disparate_impact": 0.87
+        "audit_id": audit["id"],
+        "metrics": {
+            "demographic_parity": audit["demographic_parity"],
+            "equalized_odds": audit["equalized_odds"],
+            "disparate_impact": audit["disparate_impact"],
+        },
+    }
+
+
+@router.get("/{audit_id}/metrics")
+def get_metrics(audit_id: int):
+    audit = store.get_audit(audit_id)
+
+    if not audit:
+        raise HTTPException(status_code=404, detail="Audit not found")
+
+    return {
+        "audit_id": audit["id"],
+        "demographic_parity": audit["demographic_parity"],
+        "equalized_odds": audit["equalized_odds"],
+        "disparate_impact": audit["disparate_impact"],
     }

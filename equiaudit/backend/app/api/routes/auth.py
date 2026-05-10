@@ -18,6 +18,9 @@ class TokenSchema(BaseModel):
 
     token_type: str
 
+class RefreshSchema(BaseModel):
+    refreshToken: str
+
 
 @router.post("/login", response_model=TokenSchema)
 def login(payload: LoginSchema):
@@ -29,6 +32,24 @@ def login(payload: LoginSchema):
 
     token = create_access_token(
         {"sub": payload.email}
+    )
+
+    return {
+        "access_token": token,
+        "token_type": "bearer"
+    }
+
+
+@router.post("/refresh", response_model=TokenSchema)
+def refresh_token(payload: RefreshSchema):
+    if not payload.refreshToken:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid refresh token"
+        )
+
+    token = create_access_token(
+        {"sub": "refreshed-user"}
     )
 
     return {

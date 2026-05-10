@@ -4,10 +4,12 @@ import { Model } from "../../types/model.types";
 
 interface Props {
   models: Model[];
+  onDelete?: (id: string) => void;
 }
 
 export default function ModelsTable({
   models,
+  onDelete,
 }: Props) {
   return (
     <div className="bg-surface border border-border overflow-hidden">
@@ -39,6 +41,12 @@ export default function ModelsTable({
             <th className="p-4 text-xs uppercase tracking-widest text-muted">
               Data Drift
             </th>
+
+            {onDelete && (
+              <th className="p-4 text-xs uppercase tracking-widest text-muted">
+                Actions
+              </th>
+            )}
           </tr>
         </thead>
 
@@ -63,6 +71,17 @@ export default function ModelsTable({
               <td className="p-4">{model.throughput}</td>
 
               <td className="p-4">{model.dataDrift}</td>
+
+              {onDelete && (
+                <td className="p-4">
+                  <button
+                    className="text-xs uppercase tracking-widest text-error border border-error/40 px-3 py-2 hover:bg-error/10"
+                    onClick={() => onDelete(model.id)}
+                  >
+                    Delete
+                  </button>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

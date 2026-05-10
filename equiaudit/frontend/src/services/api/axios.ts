@@ -4,6 +4,7 @@ import axios from "axios";
 import { API } from "../../constants";
 
 import { STORAGE_KEYS } from "../../constants/storage";
+import { tokenService } from "../auth/token.service";
 
 export const apiClient = axios.create({
   baseURL: API.BASE_URL,
@@ -17,9 +18,7 @@ export const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem(
-      STORAGE_KEYS.ACCESS_TOKEN
-    );
+    const token = tokenService.getAccessToken();
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -36,7 +35,8 @@ apiClient.interceptors.response.use(
 
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.clear();
+      tokenService.clearTokens();
+      localStorage.removeItem(STORAGE_KEYS.USER);
 
       window.location.href = "/login";
     }

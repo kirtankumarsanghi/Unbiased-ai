@@ -1,4 +1,13 @@
-# Prometheus configuration
-FROM nginx:stable-alpine
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
 
-COPY nginx.conf /etc/nginx/nginx.conf
+scrape_configs:
+  - job_name: "equiaudit-backend"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["backend:8000"]
+
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]

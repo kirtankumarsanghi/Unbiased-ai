@@ -2,13 +2,14 @@
 import { apiClient } from "./axios";
 
 export const reportsApi = {
-  generateReport: async (
-    modelId: string
-  ) => {
-    const response =
-      await apiClient.post(
-        `/reports/generate/${modelId}`
-      );
+  listReports: async () => {
+    const response = await apiClient.get("/reports");
+
+    return response.data;
+  },
+
+  generateReport: async () => {
+    const response = await apiClient.post("/reports/generate");
 
     return response.data;
   },

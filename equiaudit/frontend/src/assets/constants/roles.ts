@@ -1,1 +1,11 @@
-// Roles constants
+export const ROLES = {
+  SUPER_ADMIN: "SUPER_ADMIN",
+
+  ORG_ADMIN: "ORG_ADMIN",
+
+  ANALYST: "ANALYST",
+
+  AUDITOR: "AUDITOR",
+
+  API_USER: "API_USER",
+};

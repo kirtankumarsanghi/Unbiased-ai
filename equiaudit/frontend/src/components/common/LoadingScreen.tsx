@@ -1,9 +1,13 @@
-import React from 'react';
+export default function LoadingScreen() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="text-center">
+        <div className="w-20 h-20 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
 
-const LoadingScreen: React.FC = () => (
-  <div className="loading-screen">
-    <span>Loading...</span>
-  </div>
-);
-
-export default LoadingScreen;
+        <p className="mt-6 uppercase tracking-widest text-primary text-sm">
+          Initializing Audit System...
+        </p>
+      </div>
+    </div>
+  );
+}

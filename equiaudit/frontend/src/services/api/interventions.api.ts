@@ -2,6 +2,12 @@
 import { apiClient } from "./axios";
 
 export const interventionsApi = {
+  getInterventions: async () => {
+    const response = await apiClient.get("/interventions");
+
+    return response.data;
+  },
+
   enableIntervention:
     async (
       modelId: string,
