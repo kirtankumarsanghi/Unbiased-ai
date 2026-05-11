@@ -1,5 +1,5 @@
 # API router
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from app.api.routes import (
     auth,
@@ -10,8 +10,12 @@ from app.api.routes import (
     alerts,
     users,
     audit_logs,
-    metrics
+    metrics,
+    public_intelligence,
+    explainability,
+    jobs,
 )
+from app.api.deps.deps import enforce_csrf
 
 api_router = APIRouter()
 
@@ -24,47 +28,76 @@ api_router.include_router(
 api_router.include_router(
     models.router,
     prefix="/models",
-    tags=["Models"]
+    tags=["Models"],
+    dependencies=[Depends(enforce_csrf)],
 )
 
 api_router.include_router(
     audits.router,
     prefix="/audits",
-    tags=["Audits"]
+    tags=["Audits"],
+    dependencies=[Depends(enforce_csrf)],
 )
 
 api_router.include_router(
     interventions.router,
     prefix="/interventions",
-    tags=["Interventions"]
+    tags=["Interventions"],
+    dependencies=[Depends(enforce_csrf)],
 )
 
 api_router.include_router(
     reports.router,
     prefix="/reports",
-    tags=["Reports"]
+    tags=["Reports"],
+    dependencies=[Depends(enforce_csrf)],
 )
 
 api_router.include_router(
     alerts.router,
     prefix="/alerts",
-    tags=["Alerts"]
+    tags=["Alerts"],
+    dependencies=[Depends(enforce_csrf)],
 )
 
 api_router.include_router(
     audit_logs.router,
     prefix="/audit-logs",
-    tags=["Audit Logs"]
+    tags=["Audit Logs"],
+    dependencies=[Depends(enforce_csrf)],
 )
 
 api_router.include_router(
     metrics.router,
     prefix="/metrics",
-    tags=["Metrics"]
+    tags=["Metrics"],
+    dependencies=[Depends(enforce_csrf)],
 )
 
 api_router.include_router(
     users.router,
     prefix="/users",
-    tags=["Users"]
+    tags=["Users"],
+    dependencies=[Depends(enforce_csrf)],
+)
+
+api_router.include_router(
+    public_intelligence.router,
+    prefix="/public-intelligence",
+    tags=["Public Intelligence"],
+    dependencies=[Depends(enforce_csrf)],
+)
+
+api_router.include_router(
+    explainability.router,
+    prefix="/explainability",
+    tags=["Explainability"],
+    dependencies=[Depends(enforce_csrf)],
+)
+
+api_router.include_router(
+    jobs.router,
+    prefix="/jobs",
+    tags=["Jobs"],
+    dependencies=[Depends(enforce_csrf)],
 )

@@ -1,0 +1,389 @@
+from __future__ import annotations
+
+from statistics import mean
+from typing import Literal
+
+from fastapi import APIRouter
+from fastapi import Depends
+from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
+
+from app.api.deps.deps import get_database, require_roles
+from app.core.websocket import manager
+from app.models.public_analysis import PublicAnalysis
+from app.models.user import User
+router = APIRouter()
+
+
+class OptionInput(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    pros: list[str] = Field(default_factory=list)
+    cons: list[str] = Field(default_factory=list)
+    evidence_score: float = Field(ge=0, le=1, default=0.5)
+    risk_score: float = Field(ge=0, le=1, default=0.5)
+    long_term_score: float = Field(ge=0, le=1, default=0.5)
+
+
+class DecisionAssistantRequest(BaseModel):
+    question: str = Field(min_length=8, max_length=500)
+    options: list[OptionInput] = Field(min_length=2, max_length=6)
+
+
+class TextAnalysisRequest(BaseModel):
+    text: str = Field(min_length=20, max_length=20000)
+
+
+class NewsBalancerRequest(BaseModel):
+    topic: str = Field(min_length=4, max_length=300)
+    perspective_a: str = Field(min_length=20, max_length=10000)
+    perspective_b: str = Field(min_length=20, max_length=10000)
+
+
+class CareerRequest(BaseModel):
+    interests: list[str] = Field(default_factory=list)
+    skills: list[str] = Field(default_factory=list)
+    location: str = Field(default="global")
+    budget: float = Field(ge=0, default=0)
+    goals: list[str] = Field(default_factory=list)
+
+
+class FinancialRequest(BaseModel):
+    scenario: str = Field(min_length=10, max_length=1000)
+    options: list[OptionInput] = Field(min_length=2, max_length=6)
+
+
+def _normalize(value: float) -> float:
+    return max(0.0, min(1.0, round(value, 3)))
+
+
+def _count_terms(text: str, terms: list[str]) -> int:
+    lowered = text.lower()
+    return sum(lowered.count(term) for term in terms)
+
+def _save_analysis(
+    db: Session,
+    analysis_type: str,
+    input_payload: dict,
+    output_payload: dict,
+    user: User,
+):
+    row = PublicAnalysis(
+        analysis_type=analysis_type,
+        input_payload=input_payload,
+        output_payload=output_payload,
+        confidence_score=str(output_payload.get("confidence_overall", "")),
+        risk_score=str(output_payload.get("manipulation_meter", output_payload.get("risk", ""))),
+        neutrality_score=str(output_payload.get("neutrality_score", "")),
+        user_id=user.id if user else None,
+        organisation_id=user.organisation_id if user else None,
+    )
+    db.add(row)
+    db.commit()
+    db.refresh(row)
+    return row
+
+
+@router.post("/decision-assistant")
+async def decision_assistant(
+    payload: DecisionAssistantRequest,
+    db: Session = Depends(get_database),
+    user: User = Depends(require_roles("SUPER_ADMIN", "ORG_ADMIN", "ANALYST", "AUDITOR", "API_USER")),
+):
+    ranked = []
+    for option in payload.options:
+        confidence = _normalize((option.evidence_score + option.long_term_score) / 2)
+        neutrality = _normalize(1 - option.risk_score * 0.6)
+        composite = _normalize((confidence * 0.45) + (neutrality * 0.3) + ((1 - option.risk_score) * 0.25))
+        ranked.append(
+            {
+                "name": option.name,
+                "pros": option.pros,
+                "cons": option.cons,
+                "confidence": confidence,
+                "risk": option.risk_score,
+                "neutrality": neutrality,
+                "composite_score": composite,
+                "uncertainty": _normalize(1 - confidence),
+            }
+        )
+
+    ranked.sort(key=lambda x: x["composite_score"], reverse=True)
+
+    missing_info = [
+        "Verified third-party evidence for claims.",
+        "Personal constraints (time horizon, budget shocks, opportunity cost).",
+        "Counterfactual outcome if no decision is taken now.",
+    ]
+    result = {
+        "question": payload.question,
+        "recommendation": ranked[0]["name"],
+        "balanced_options": ranked,
+        "tradeoff_summary": "Top option leads on evidence strength, while runner-up may offer lower short-term risk in uncertain environments.",
+        "missing_information": missing_info,
+        "confidence_overall": _normalize(mean(item["confidence"] for item in ranked)),
+    }
+    saved = _save_analysis(db, "decision_assistant", payload.model_dump(), result, user)
+    await manager.broadcast_event(
+        "public_analysis.completed",
+        {
+            "analysis_id": saved.id,
+            "type": "decision_assistant",
+            "recommendation": result["recommendation"],
+            "confidence_overall": result["confidence_overall"],
+        },
+        channel="public_telemetry",
+    )
+    return result
+
+
+@router.post("/bias-detector")
+async def bias_detector(
+    payload: TextAnalysisRequest,
+    db: Session = Depends(get_database),
+    user: User = Depends(require_roles("SUPER_ADMIN", "ORG_ADMIN", "ANALYST", "AUDITOR", "API_USER")),
+):
+    emotional_terms = ["outrage", "shocking", "fear", "panic", "hate", "disaster", "betrayal", "urgent"]
+    propaganda_terms = ["they don't want you to know", "wake up", "mainstream lies", "enemy", "traitor"]
+    certainty_terms = ["always", "never", "obvious", "undeniable", "everyone knows"]
+    text = payload.text
+    length_factor = max(1, len(text.split()) / 120)
+
+    emotional_hits = _count_terms(text, emotional_terms)
+    propaganda_hits = _count_terms(text, propaganda_terms)
+    certainty_hits = _count_terms(text, certainty_terms)
+
+    manipulation = _normalize((emotional_hits * 0.3 + propaganda_hits * 0.5 + certainty_hits * 0.2) / length_factor / 5)
+    political_leaning: Literal["left", "right", "mixed", "unclear"] = "unclear"
+    lowered = text.lower()
+    if "tax cuts" in lowered or "border security" in lowered:
+        political_leaning = "right"
+    elif "climate justice" in lowered or "wealth tax" in lowered:
+        political_leaning = "left"
+    elif any(token in lowered for token in ["however", "on the other hand", "multiple views"]):
+        political_leaning = "mixed"
+
+    neutrality = _normalize(1 - manipulation)
+    factual_confidence = _normalize(0.7 - manipulation * 0.4)
+
+    result = {
+        "manipulation_meter": manipulation,
+        "emotional_intensity": _normalize(min(1.0, emotional_hits / (length_factor * 6))),
+        "political_leaning": political_leaning,
+        "factual_confidence": factual_confidence,
+        "neutrality_score": neutrality,
+        "missing_context": [
+            "Primary evidence sources are not cited.",
+            "Counterarguments are minimally represented.",
+            "Absolute claims should be replaced with probabilistic language.",
+        ],
+        "balanced_rewrite": "The claim may be directionally valid, but evidence quality and alternative explanations should be reviewed before strong conclusions.",
+    }
+    saved = _save_analysis(db, "bias_detector", payload.model_dump(), result, user)
+    await manager.broadcast_event(
+        "public_analysis.completed",
+        {
+            "analysis_id": saved.id,
+            "type": "bias_detector",
+            "manipulation_meter": result["manipulation_meter"],
+            "neutrality_score": result["neutrality_score"],
+        },
+        channel="public_telemetry",
+    )
+    if result["manipulation_meter"] >= 0.65:
+        await manager.broadcast_event(
+            "incident.detected",
+            {
+                "severity": "HIGH",
+                "source": "public_bias_detector",
+                "summary": "High manipulation content detected.",
+                "analysis_id": saved.id,
+            },
+            channel="enterprise_incidents",
+        )
+    return result
+
+
+@router.post("/news-balancer")
+async def news_balancer(
+    payload: NewsBalancerRequest,
+    db: Session = Depends(get_database),
+    user: User = Depends(require_roles("SUPER_ADMIN", "ORG_ADMIN", "ANALYST", "AUDITOR", "API_USER")),
+):
+    a_len = len(payload.perspective_a.split())
+    b_len = len(payload.perspective_b.split())
+    asymmetry = abs(a_len - b_len) / max(1, (a_len + b_len) / 2)
+    source_diversity = _normalize(0.9 - asymmetry * 0.4)
+    neutrality_heat = _normalize(0.82 - asymmetry * 0.35)
+
+    result = {
+        "topic": payload.topic,
+        "perspectives": [
+            {"label": "Perspective A", "summary": payload.perspective_a[:240]},
+            {"label": "Perspective B", "summary": payload.perspective_b[:240]},
+        ],
+        "timeline": [
+            {"stage": "Initial claim", "confidence": 0.63},
+            {"stage": "Counter evidence", "confidence": 0.74},
+            {"stage": "Consensus estimate", "confidence": 0.69},
+        ],
+        "source_diversity_indicator": source_diversity,
+        "neutrality_heatmap": neutrality_heat,
+        "facts_vs_opinion": {
+            "fact_density": _normalize(0.65 + source_diversity * 0.2),
+            "opinion_density": _normalize(0.35 - source_diversity * 0.1),
+        },
+    }
+    saved = _save_analysis(db, "news_balancer", payload.model_dump(), result, user)
+    await manager.broadcast_event(
+        "public_analysis.completed",
+        {"analysis_id": saved.id, "type": "news_balancer", "topic": payload.topic},
+        channel="public_telemetry",
+    )
+    return result
+
+
+@router.post("/career-engine")
+async def career_engine(
+    payload: CareerRequest,
+    db: Session = Depends(get_database),
+    user: User = Depends(require_roles("SUPER_ADMIN", "ORG_ADMIN", "ANALYST", "AUDITOR", "API_USER")),
+):
+    skill_depth = min(1.0, len(payload.skills) / 12)
+    goal_clarity = min(1.0, len(payload.goals) / 6)
+    budget_signal = 0.7 if payload.budget >= 10000 else 0.45
+
+    suggestions = [
+        {
+            "role": "Data Governance Analyst",
+            "salary_band_usd": "78k-124k",
+            "growth_potential": _normalize(0.82),
+            "automation_risk": _normalize(0.31),
+            "stress_index": _normalize(0.57),
+        },
+        {
+            "role": "AI Product Strategist",
+            "salary_band_usd": "98k-162k",
+            "growth_potential": _normalize(0.86),
+            "automation_risk": _normalize(0.26),
+            "stress_index": _normalize(0.62),
+        },
+    ]
+    result = {
+        "location": payload.location,
+        "skill_gap_score": _normalize(1 - skill_depth * 0.7),
+        "education_roi_score": _normalize((goal_clarity * 0.45) + (budget_signal * 0.55)),
+        "career_paths": suggestions,
+    }
+    saved = _save_analysis(db, "career_engine", payload.model_dump(), result, user)
+    await manager.broadcast_event(
+        "public_analysis.completed",
+        {"analysis_id": saved.id, "type": "career_engine", "location": payload.location},
+        channel="public_telemetry",
+    )
+    return result
+
+
+@router.post("/financial-assistant")
+async def financial_assistant(
+    payload: FinancialRequest,
+    db: Session = Depends(get_database),
+    user: User = Depends(require_roles("SUPER_ADMIN", "ORG_ADMIN", "ANALYST", "AUDITOR", "API_USER")),
+):
+    ranked = []
+    for option in payload.options:
+        hidden_fee_risk = _normalize(option.risk_score * 0.6)
+        long_term_impact = _normalize(option.long_term_score * 0.7 + option.evidence_score * 0.3)
+        net_score = _normalize((1 - option.risk_score) * 0.5 + option.long_term_score * 0.35 + option.evidence_score * 0.15)
+        ranked.append(
+            {
+                "name": option.name,
+                "risk_radar": option.risk_score,
+                "hidden_fee_detection": hidden_fee_risk,
+                "long_term_impact": long_term_impact,
+                "net_score": net_score,
+            }
+        )
+    ranked.sort(key=lambda x: x["net_score"], reverse=True)
+    result = {
+        "scenario": payload.scenario,
+        "comparison": ranked,
+        "recommended_option": ranked[0]["name"],
+        "projection_note": "Projection assumes stable macro conditions and excludes black swan events.",
+    }
+    saved = _save_analysis(db, "financial_assistant", payload.model_dump(), result, user)
+    await manager.broadcast_event(
+        "public_analysis.completed",
+        {"analysis_id": saved.id, "type": "financial_assistant", "recommended_option": ranked[0]["name"]},
+        channel="public_telemetry",
+    )
+    return result
+
+
+@router.post("/debate-analyzer")
+async def debate_analyzer(
+    payload: TextAnalysisRequest,
+    db: Session = Depends(get_database),
+    user: User = Depends(require_roles("SUPER_ADMIN", "ORG_ADMIN", "ANALYST", "AUDITOR", "API_USER")),
+):
+    fallacy_terms = [
+        "everyone knows",
+        "strawman",
+        "you people",
+        "obviously wrong",
+        "either you are with us",
+    ]
+    evidence_terms = ["study", "data", "report", "source", "sample", "method"]
+    text = payload.text
+    fallacy_hits = _count_terms(text, fallacy_terms)
+    evidence_hits = _count_terms(text, evidence_terms)
+    logic_strength = _normalize(min(1.0, (evidence_hits + 1) / (fallacy_hits + evidence_hits + 2)))
+
+    result = {
+        "logic_strength_score": logic_strength,
+        "fallacy_indicators": [
+            "Potential false dichotomy" if "either" in text.lower() else "No strong dichotomy detected",
+            "Potential appeal to emotion" if "fear" in text.lower() else "Low explicit emotional appeal",
+        ],
+        "evidence_quality": _normalize(min(1.0, evidence_hits / 8)),
+        "argument_breakdown": [
+            {"segment": "Claim quality", "score": _normalize(logic_strength * 0.9)},
+            {"segment": "Evidence traceability", "score": _normalize(min(1.0, evidence_hits / 7))},
+            {"segment": "Neutral framing", "score": _normalize(1 - min(1.0, fallacy_hits / 6))},
+        ],
+    }
+    saved = _save_analysis(db, "debate_analyzer", payload.model_dump(), result, user)
+    await manager.broadcast_event(
+        "public_analysis.completed",
+        {"analysis_id": saved.id, "type": "debate_analyzer", "logic_strength_score": logic_strength},
+        channel="public_telemetry",
+    )
+    return result
+
+
+@router.get("/history")
+def get_public_analysis_history(
+    analysis_type: str | None = None,
+    limit: int = 50,
+    db: Session = Depends(get_database),
+    user: User = Depends(require_roles("SUPER_ADMIN", "ORG_ADMIN", "ANALYST", "AUDITOR", "API_USER")),
+):
+    query = db.query(PublicAnalysis).order_by(PublicAnalysis.id.desc())
+    if analysis_type:
+        query = query.filter(PublicAnalysis.analysis_type == analysis_type)
+    if user.organisation_id:
+        query = query.filter(PublicAnalysis.organisation_id == user.organisation_id)
+    rows = query.limit(max(1, min(limit, 500))).all()
+
+    return [
+        {
+            "id": row.id,
+            "analysis_type": row.analysis_type,
+            "confidence_score": row.confidence_score,
+            "risk_score": row.risk_score,
+            "neutrality_score": row.neutrality_score,
+            "created_at": row.created_at.isoformat() if row.created_at else None,
+            "input_payload": row.input_payload,
+            "output_payload": row.output_payload,
+        }
+        for row in rows
+    ]

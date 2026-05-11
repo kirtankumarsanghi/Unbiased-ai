@@ -1,8 +1,4 @@
-// Auth store logic
 import { create } from "zustand";
-
-import { STORAGE_KEYS } from "../../constants/storage";
-import { tokenService } from "../../services/auth/token.service";
 
 interface User {
   id: string;
@@ -12,97 +8,30 @@ interface User {
 }
 
 interface AuthState {
-  token: string | null;
   user: User | null;
-
-  setAuth: (
-    token: string,
-    user: User,
-    rememberSession?: boolean
-  ) => void;
-
-  logout: () => void;
-
-  restoreSession: () => void;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  setAuthUser: (user: User | null) => void;
+  setLoading: (loading: boolean) => void;
+  clearAuth: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  token: null,
   user: null,
+  isAuthenticated: false,
+  isLoading: true,
 
-  setAuth: (
-    token,
-    user,
-    rememberSession = true
-  ) => {
-    tokenService.setAccessToken(token);
-    if (rememberSession) {
-      localStorage.setItem(
-        STORAGE_KEYS.USER,
-        JSON.stringify(user)
-      );
-      sessionStorage.removeItem(
-        STORAGE_KEYS.USER
-      );
-    } else {
-      sessionStorage.setItem(
-        STORAGE_KEYS.USER,
-        JSON.stringify(user)
-      );
-      localStorage.removeItem(
-        STORAGE_KEYS.USER
-      );
-    }
-
+  setAuthUser: (user) =>
     set({
-      token,
       user,
-    });
-  },
+      isAuthenticated: Boolean(user),
+    }),
 
-  logout: () => {
-    tokenService.clearTokens();
-    localStorage.removeItem(STORAGE_KEYS.USER);
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  setLoading: (isLoading) => set({ isLoading }),
 
+  clearAuth: () =>
     set({
-      token: null,
       user: null,
-    });
-  },
-
-  restoreSession: () => {
-    const legacyToken = localStorage.getItem("token");
-    const legacyUser = localStorage.getItem("user");
-
-    let token = tokenService.getAccessToken();
-    let user = localStorage.getItem(
-      STORAGE_KEYS.USER
-    );
-    if (!user) {
-      user = sessionStorage.getItem(
-        STORAGE_KEYS.USER
-      );
-    }
-
-    if (!token && legacyToken) {
-      tokenService.setAccessToken(legacyToken);
-      localStorage.removeItem("token");
-      token = legacyToken;
-    }
-
-    if (!user && legacyUser) {
-      localStorage.setItem(STORAGE_KEYS.USER, legacyUser);
-      localStorage.removeItem("user");
-      user = legacyUser;
-    }
-
-    if (token) {
-      set({
-        token,
-        user: user ? JSON.parse(user) : null,
-      });
-    }
-  },
+      isAuthenticated: false,
+    }),
 }));

@@ -8,6 +8,7 @@ import {
   FileBarChart,
   Bell,
   Settings,
+  Sparkles,
 } from "lucide-react";
 
 export const NAVIGATION = [
@@ -75,6 +76,19 @@ export const NAVIGATION = [
       "ORG_ADMIN",
       "ANALYST",
       "AUDITOR",
+    ],
+  },
+
+  {
+    label: "Public AI",
+    path: "/dashboard/public-intelligence",
+    icon: Sparkles,
+    allowedRoles: [
+      "SUPER_ADMIN",
+      "ORG_ADMIN",
+      "ANALYST",
+      "AUDITOR",
+      "API_USER",
     ],
   },
 

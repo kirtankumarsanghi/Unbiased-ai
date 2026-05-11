@@ -39,7 +39,7 @@ export default function LandingPage() {
 
         <div className="relative max-w-6xl mx-auto px-6 py-20">
           <p className="text-xs uppercase tracking-[0.4em] text-muted">
-            EquiAudit AI Governance Platform
+            Unbiased AI Decision Intelligence Platform
           </p>
 
           <h1 className="mt-6 text-4xl md:text-6xl font-bold text-primary">
@@ -47,9 +47,9 @@ export default function LandingPage() {
           </h1>
 
           <p className="mt-6 max-w-2xl text-muted">
-            Monitor high-stakes AI systems with continuous fairness
-            telemetry, explainable AI audits, and automated intervention
-            protocols built for regulators and enterprise operators.
+            A dual ecosystem for people and enterprises: make neutral daily
+            decisions, detect manipulation, and govern production AI with
+            real-time fairness telemetry and explainable audits.
           </p>
 
           <div className="mt-10 flex flex-wrap gap-4">

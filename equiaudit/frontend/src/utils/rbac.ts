@@ -7,6 +7,7 @@ const roleMatrix: Record<string, string[]> = {
     "/dashboard/interventions",
     "/dashboard/reports",
     "/dashboard/alerts",
+    "/dashboard/public-intelligence",
     "/dashboard/settings",
   ],
   ANALYST: [
@@ -15,14 +16,16 @@ const roleMatrix: Record<string, string[]> = {
     "/dashboard/audits",
     "/dashboard/reports",
     "/dashboard/alerts",
+    "/dashboard/public-intelligence",
   ],
   AUDITOR: [
     "/dashboard",
     "/dashboard/audits",
     "/dashboard/reports",
     "/dashboard/alerts",
+    "/dashboard/public-intelligence",
   ],
-  API_USER: ["/dashboard"],
+  API_USER: ["/dashboard", "/dashboard/public-intelligence"],
 };
 
 export function canAccessRoute(

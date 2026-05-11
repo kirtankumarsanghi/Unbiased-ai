@@ -10,6 +10,9 @@ const LandingPage = lazy(
 const LoginPage = lazy(
   () => import("../../pages/auth/LoginPage")
 );
+const SignupPage = lazy(
+  () => import("../../pages/auth/SignupPage")
+);
 const DashboardPage = lazy(
   () => import("../../pages/dashboard/DashboardPage")
 );
@@ -31,6 +34,9 @@ const AlertsPage = lazy(
 const SettingsPage = lazy(
   () => import("../../pages/settings/SettingsPage")
 );
+const PublicIntelligencePage = lazy(
+  () => import("../../pages/public-intelligence/PublicIntelligencePage")
+);
 
 export const router = createBrowserRouter([
   {
@@ -40,6 +46,10 @@ export const router = createBrowserRouter([
   {
     path: "/login",
     element: <LoginPage />,
+  },
+  {
+    path: "/signup",
+    element: <SignupPage />,
   },
   {
     path: "/dashboard",
@@ -97,6 +107,16 @@ export const router = createBrowserRouter([
       <ProtectedRoute>
         <RBACRoute route="/dashboard/alerts">
           <AlertsPage />
+        </RBACRoute>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/dashboard/public-intelligence",
+    element: (
+      <ProtectedRoute>
+        <RBACRoute route="/dashboard/public-intelligence">
+          <PublicIntelligencePage />
         </RBACRoute>
       </ProtectedRoute>
     ),

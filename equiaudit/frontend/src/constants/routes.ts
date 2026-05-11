@@ -17,6 +17,9 @@ export const ROUTES = {
 
   ALERTS: "/dashboard/alerts",
 
+  PUBLIC_INTELLIGENCE:
+    "/dashboard/public-intelligence",
+
   SETTINGS: "/dashboard/settings",
 
   USERS: "/dashboard/users",

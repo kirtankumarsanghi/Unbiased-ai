@@ -3,14 +3,17 @@ import { create } from "zustand";
 
 interface UIState {
   sidebarOpen: boolean;
+  backendReady: boolean;
 
   toggleSidebar: () => void;
 
   closeSidebar: () => void;
+  setBackendReady: (ready: boolean) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
-  sidebarOpen: true,
+  sidebarOpen: false,
+  backendReady: true,
 
   toggleSidebar: () =>
     set((state) => ({
@@ -20,5 +23,10 @@ export const useUIStore = create<UIState>((set) => ({
   closeSidebar: () =>
     set({
       sidebarOpen: false,
+    }),
+
+  setBackendReady: (backendReady) =>
+    set({
+      backendReady,
     }),
 }));

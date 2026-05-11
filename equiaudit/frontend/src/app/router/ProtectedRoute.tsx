@@ -10,11 +10,18 @@ interface Props {
 export default function ProtectedRoute({
   children,
 }: Props) {
-  const token = useAuthStore((state) => state.token);
+  const isAuthenticated = useAuthStore(
+    (state) => state.isAuthenticated
+  );
+  const isLoading = useAuthStore((state) => state.isLoading);
 
   const location = useLocation();
 
-  if (!token) {
+  if (isLoading) {
+    return null;
+  }
+
+  if (!isAuthenticated) {
     return (
       <Navigate
         to="/login"

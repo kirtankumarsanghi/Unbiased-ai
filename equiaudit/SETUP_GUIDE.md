@@ -111,7 +111,7 @@ Frontend will be available at: http://localhost:5173
 
 For testing purposes:
 - Email: admin@equiaudit.com
-- Password: admin123
+- Password: Admin@123
 
 ## Next Steps
 

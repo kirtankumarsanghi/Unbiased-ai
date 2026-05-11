@@ -18,3 +18,9 @@ class Intervention(Base):
     name = Column(String)
 
     status = Column(String)
+
+    fairness_gain = Column(String, default="+0%")
+
+    accuracy_tradeoff = Column(String, default="0%")
+
+    processing_time = Column(String, default="N/A")

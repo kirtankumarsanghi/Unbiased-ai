@@ -1,7 +1,7 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { QueryProvider } from "./QueryProvider";
 import { ThemeProvider } from "./ThemeProvider";
-import { useAuthStore } from "../store/auth.store";
+import { AuthProvider } from "./AuthProvider";
 import NotificationCenter from "../../components/common/NotificationCenter";
 import ToastCenter from "../../components/common/ToastCenter";
 
@@ -10,18 +10,14 @@ interface AppProvidersProps {
 }
 
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
-  const { restoreSession } = useAuthStore();
-
-  useEffect(() => {
-    restoreSession();
-  }, [restoreSession]);
-
   return (
     <QueryProvider>
       <ThemeProvider>
-        {children}
-        <NotificationCenter />
-        <ToastCenter />
+        <AuthProvider>
+          {children}
+          <NotificationCenter />
+          <ToastCenter />
+        </AuthProvider>
       </ThemeProvider>
     </QueryProvider>
   );

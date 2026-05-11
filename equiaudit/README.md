@@ -87,11 +87,9 @@ High-level flow:
 
 ### 2) Authentication flow
 - Login form calls `POST /api/v1/auth/login`.
-- Backend returns bearer token (`access_token`).
-- Token is stored by frontend token service and attached to outgoing Axios requests.
-- On `401`, frontend clears session and redirects to `/login`.
-
-Note: current backend login is prototype logic that accepts any non-empty email/password.
+- Backend validates email/password and establishes an HTTP-only cookie session (`session_id` + `refresh_token`), plus CSRF cookie/header checks.
+- Frontend sends requests with `withCredentials: true` and performs silent refresh via `POST /api/v1/auth/refresh` when needed.
+- On unrecoverable `401`, frontend redirects to `/login`.
 
 ### 3) Dashboard behavior
 - Dashboard uses React Query to fetch audit logs from `GET /api/v1/audit-logs/`.
@@ -203,6 +201,11 @@ SECRET_KEY=your-secret-key
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
 REDIS_URL=redis://localhost:6379
+FRONTEND_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+DEFAULT_ADMIN_NAME=Platform Admin
+DEFAULT_ADMIN_EMAIL=admin@equiaudit.com
+DEFAULT_ADMIN_PASSWORD=Admin@123
+DEFAULT_ADMIN_ROLE=SUPER_ADMIN
 ```
 
 ### Frontend (`frontend/.env`)
@@ -310,7 +313,7 @@ Available in `infrastructure/kubernetes`:
 
 ## Current State and Limitations
 - The API architecture is production-style, but many active routes currently use in-memory data from `backend/app/data/store.py`.
-- Auth is currently simplified prototype logic.
+- Auth uses cookie-based sessions with CSRF checks and seeded bootstrap admin credentials from environment variables.
 - SQLAlchemy models, repositories, fairness service modules, Celery, and explainability modules are present as scaffolding/extension points.
 - `GET /metrics` currently returns a minimal `equiaudit_up` gauge.
 
