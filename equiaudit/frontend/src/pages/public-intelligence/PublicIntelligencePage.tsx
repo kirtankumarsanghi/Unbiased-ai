@@ -52,7 +52,11 @@ export default function PublicIntelligencePage() {
   const [purchaseOptionsText, setPurchaseOptionsText] = useState(JSON.stringify(starterOptions, null, 2));
   const [purchasePriorities, setPurchasePriorities] = useState("battery life, repairability, value");
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
+  const [askQuestion, setAskQuestion] = useState("Explain whether learning Python in 2026 is still worth it for career growth.");
 
+  const askMutation = useMutation({
+    mutationFn: publicIntelligenceApi.askPublicAI,
+  });
   const decisionMutation = useMutation({
     mutationFn: publicIntelligenceApi.runDecisionAssistant,
   });
@@ -158,6 +162,12 @@ export default function PublicIntelligencePage() {
       priorities: purchasePriorities.split(",").map((item) => item.trim()).filter(Boolean),
     });
   };
+  const onAskPublicAI = () => {
+    askMutation.mutate({
+      question: askQuestion,
+      context: "Public Intelligence page question",
+    });
+  };
 
   const radarData = useMemo(() => {
     const decision = decisionMutation.data;
@@ -206,6 +216,32 @@ export default function PublicIntelligencePage() {
 
         <section className="mt-8 grid grid-cols-1 xl:grid-cols-2 gap-6">
           <div className="border border-border bg-surface p-5 space-y-4">
+            <h2 className="text-lg font-semibold text-primary">Ask Public AI (Live)</h2>
+            <textarea
+              rows={5}
+              value={askQuestion}
+              onChange={(e) => setAskQuestion(e.target.value)}
+              className="w-full bg-background border border-border px-3 py-2 text-sm"
+              placeholder="Ask any question..."
+            />
+            <CyberButton onClick={onAskPublicAI}>Get Accurate Answer</CyberButton>
+            {askMutation.data?.answer && (
+              <div className="text-sm text-muted border border-border/60 bg-background/40 p-3 space-y-2">
+                <p>{askMutation.data.answer}</p>
+                {askMutation.data.comment && <p className="text-xs">{askMutation.data.comment}</p>}
+              </div>
+            )}
+          </div>
+          <div className="border border-border bg-surface p-5 space-y-4">
+            <h2 className="text-lg font-semibold text-primary">Disclaimer</h2>
+            <p className="text-sm text-muted">
+              Public AI answers are generated live by OpenAI. For medical, legal, and financial topics, verify with qualified professionals.
+            </p>
+          </div>
+        </section>
+
+        <section className="mt-8 grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <div className="border border-border bg-surface p-5 space-y-4">
             <h2 className="text-lg font-semibold text-primary">Decision Assistant</h2>
             <input
               value={question}
@@ -222,6 +258,11 @@ export default function PublicIntelligencePage() {
               <p className="text-xs text-error">{optionsError}</p>
             )}
             <CyberButton onClick={onRunDecision}>Run Balanced Analysis</CyberButton>
+            {decisionMutation.data?.assistant_reply && (
+              <div className="text-sm text-muted border border-border/60 bg-background/40 p-3">
+                {decisionMutation.data.assistant_reply}
+              </div>
+            )}
           </div>
 
           <div className="border border-border bg-surface p-5">
@@ -264,6 +305,11 @@ export default function PublicIntelligencePage() {
                 <p>Factual Confidence: {(biasMutation.data.factual_confidence * 100).toFixed(1)}%</p>
               </div>
             )}
+            {biasMutation.data?.assistant_reply && (
+              <div className="text-sm text-muted border border-border/60 bg-background/40 p-3">
+                {biasMutation.data.assistant_reply}
+              </div>
+            )}
           </div>
 
           <div className="border border-border bg-surface p-5">
@@ -278,6 +324,11 @@ export default function PublicIntelligencePage() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
+            {debateMutation.data?.assistant_reply && (
+              <div className="mt-4 text-sm text-muted border border-border/60 bg-background/40 p-3">
+                {debateMutation.data.assistant_reply}
+              </div>
+            )}
           </div>
         </section>
 
@@ -314,6 +365,11 @@ export default function PublicIntelligencePage() {
               </div>
             ) : (
               <p className="text-sm text-muted mt-4">Run the balancer to view neutrality metrics.</p>
+            )}
+            {newsMutation.data?.assistant_reply && (
+              <div className="mt-4 text-sm text-muted border border-border/60 bg-background/40 p-3">
+                {newsMutation.data.assistant_reply}
+              </div>
             )}
           </div>
         </section>
@@ -371,6 +427,11 @@ export default function PublicIntelligencePage() {
             ) : (
               <p className="text-sm text-muted mt-4">Run the engine to see recommended paths.</p>
             )}
+            {careerMutation.data?.assistant_reply && (
+              <div className="mt-4 text-sm text-muted border border-border/60 bg-background/40 p-3">
+                {careerMutation.data.assistant_reply}
+              </div>
+            )}
           </div>
         </section>
 
@@ -406,6 +467,11 @@ export default function PublicIntelligencePage() {
               </div>
             ) : (
               <p className="text-sm text-muted mt-4">Run analysis to view financial tradeoffs.</p>
+            )}
+            {financialMutation.data?.assistant_reply && (
+              <div className="mt-4 text-sm text-muted border border-border/60 bg-background/40 p-3">
+                {financialMutation.data.assistant_reply}
+              </div>
             )}
           </div>
         </section>
@@ -449,6 +515,11 @@ export default function PublicIntelligencePage() {
               </div>
             ) : (
               <p className="text-sm text-muted mt-4">Run comparison to see value scores.</p>
+            )}
+            {purchaseMutation.data?.assistant_reply && (
+              <div className="mt-4 text-sm text-muted border border-border/60 bg-background/40 p-3">
+                {purchaseMutation.data.assistant_reply}
+              </div>
             )}
           </div>
         </section>

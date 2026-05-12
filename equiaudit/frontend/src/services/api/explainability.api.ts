@@ -1,5 +1,4 @@
 import { apiClient } from "./axios";
-import { isMockEnabled } from "./mock";
 
 export interface ExplainabilityPayload {
   features: Record<string, number>;
@@ -17,6 +16,11 @@ export interface LimePayload extends ExplainabilityPayload {
 export interface ProxyDetectionPayload {
   features: string[];
   sensitive_keywords?: string[];
+}
+
+export interface ExplainabilityAssistantPayload {
+  question: string;
+  analysis_context?: Record<string, unknown>;
 }
 
 /* ---------- helpers ---------- */
@@ -167,26 +171,27 @@ const mockProxyDetection = async (payload: ProxyDetectionPayload) => {
 /* ---------- exported API ---------- */
 export const explainabilityApi = {
   runShap: async (payload: ShapPayload) => {
-    if (isMockEnabled()) return mockShap(payload);
     const response = await apiClient.post("/explainability/shap", payload);
     return response.data;
   },
 
   runLime: async (payload: LimePayload) => {
-    if (isMockEnabled()) return mockLime(payload);
     const response = await apiClient.post("/explainability/lime", payload);
     return response.data;
   },
 
   runCounterfactual: async (payload: ExplainabilityPayload) => {
-    if (isMockEnabled()) return mockCounterfactual(payload);
     const response = await apiClient.post("/explainability/counterfactual", payload);
     return response.data;
   },
 
   runProxyDetection: async (payload: ProxyDetectionPayload) => {
-    if (isMockEnabled()) return mockProxyDetection(payload);
     const response = await apiClient.post("/explainability/proxy-detection", payload);
+    return response.data;
+  },
+
+  askExplainabilityAssistant: async (payload: ExplainabilityAssistantPayload) => {
+    const response = await apiClient.post("/explainability/assistant", payload);
     return response.data;
   },
 };

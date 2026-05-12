@@ -1,5 +1,4 @@
 import { apiClient } from "./axios";
-import { isMockEnabled } from "./mock";
 
 export interface DecisionOption {
   name: string;
@@ -38,6 +37,11 @@ export interface PurchaseEvaluatorPayload {
   product_category: string;
   options: DecisionOption[];
   priorities: string[];
+}
+
+export interface PublicAskPayload {
+  question: string;
+  context?: string;
 }
 
 /* ---------- helpers ---------- */
@@ -267,87 +271,49 @@ const getMockHistory = () => {
 /* ---------- exported API ---------- */
 export const publicIntelligenceApi = {
   runDecisionAssistant: async (payload: DecisionAssistantPayload) => {
-    if (isMockEnabled()) {
-      const result = await mockDecisionAssistant(payload);
-      saveMockHistory("decision_assistant");
-      return result;
-    }
     const response = await apiClient.post("/public-intelligence/decision-assistant", payload);
     return response.data;
   },
 
   runBiasDetector: async (text: string) => {
-    if (isMockEnabled()) {
-      const result = await mockBiasDetector(text);
-      saveMockHistory("bias_detector");
-      return result;
-    }
     const response = await apiClient.post("/public-intelligence/bias-detector", { text });
     return response.data;
   },
 
   runDebateAnalyzer: async (text: string) => {
-    if (isMockEnabled()) {
-      const result = await mockDebateAnalyzer(text);
-      saveMockHistory("debate_analyzer");
-      return result;
-    }
     const response = await apiClient.post("/public-intelligence/debate-analyzer", { text });
     return response.data;
   },
 
   runNewsBalancer: async (payload: NewsBalancerPayload) => {
-    if (isMockEnabled()) {
-      const result = await mockNewsBalancer(payload);
-      saveMockHistory("news_balancer");
-      return result;
-    }
     const response = await apiClient.post("/public-intelligence/news-balancer", payload);
     return response.data;
   },
 
   runCareerEngine: async (payload: CareerPayload) => {
-    if (isMockEnabled()) {
-      const result = await mockCareerEngine(payload);
-      saveMockHistory("career_engine");
-      return result;
-    }
     const response = await apiClient.post("/public-intelligence/career-engine", payload);
     return response.data;
   },
 
   runFinancialAssistant: async (payload: FinancialAssistantPayload) => {
-    if (isMockEnabled()) {
-      const result = await mockFinancialAssistant(payload);
-      saveMockHistory("financial_assistant");
-      return result;
-    }
     const response = await apiClient.post("/public-intelligence/financial-assistant", payload);
     return response.data;
   },
 
   runPurchaseEvaluator: async (payload: PurchaseEvaluatorPayload) => {
-    if (isMockEnabled()) {
-      const result = await mockPurchaseEvaluator(payload);
-      saveMockHistory("purchase_evaluator");
-      return result;
-    }
     const response = await apiClient.post("/public-intelligence/purchase-evaluator", payload);
     return response.data;
   },
 
   getHistory: async (analysis_type?: string) => {
-    if (isMockEnabled()) {
-      await delay(200);
-      const all = getMockHistory();
-      if (analysis_type) {
-        return all.filter((h: { analysis_type: string }) => h.analysis_type === analysis_type);
-      }
-      return all;
-    }
     const response = await apiClient.get("/public-intelligence/history", {
       params: analysis_type ? { analysis_type } : {},
     });
+    return response.data;
+  },
+
+  askPublicAI: async (payload: PublicAskPayload) => {
+    const response = await apiClient.post("/public-intelligence/ask", payload);
     return response.data;
   },
 };

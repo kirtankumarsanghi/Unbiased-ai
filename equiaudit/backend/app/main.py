@@ -34,6 +34,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.frontend_origins,
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -161,8 +162,8 @@ def ensure_runtime_tables():
     AlertThreshold.__table__.create(bind=engine, checkfirst=True)
 
 
-seed_initial_data()
 ensure_runtime_tables()
+seed_initial_data()
 
 
 @app.get("/")

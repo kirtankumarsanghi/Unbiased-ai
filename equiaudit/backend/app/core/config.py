@@ -19,6 +19,11 @@ class Settings(BaseSettings):
 
     REDIS_URL: str
 
+    OPENAI_API_KEY: str | None = None
+    OPENAI_MODEL: str = "gpt-4o-mini"
+    OPENAI_BASE_URL: str = "https://api.openai.com/v1"
+    OPENAI_TIMEOUT_SECONDS: int = 30
+
     CELERY_BROKER_URL: str | None = None
     CELERY_RESULT_BACKEND: str | None = None
 

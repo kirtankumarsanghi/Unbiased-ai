@@ -34,11 +34,13 @@ export default function ExplainabilityPage() {
   const [weightsText, setWeightsText] = useState(JSON.stringify({ income: 1.3, credit_score: 1.1 }, null, 2));
   const [proxyText, setProxyText] = useState("race_indicator, zip_code, age_bucket");
   const [parseError, setParseError] = useState<string | null>(null);
+  const [assistantQuestion, setAssistantQuestion] = useState("Explain in simple words why credit_score has a strong influence.");
 
   const shapMutation = useMutation({ mutationFn: explainabilityApi.runShap });
   const limeMutation = useMutation({ mutationFn: explainabilityApi.runLime });
   const counterfactualMutation = useMutation({ mutationFn: explainabilityApi.runCounterfactual });
   const proxyMutation = useMutation({ mutationFn: explainabilityApi.runProxyDetection });
+  const assistantMutation = useMutation({ mutationFn: explainabilityApi.askExplainabilityAssistant });
 
   const parseJson = (raw: string) => {
     try {
@@ -77,9 +79,19 @@ export default function ExplainabilityPage() {
     setParseError(null);
     proxyMutation.mutate({ features: proxyText.split(",").map((item) => item.trim()).filter(Boolean) });
   };
+  const runAssistant = () => {
+    assistantMutation.mutate({
+      question: assistantQuestion,
+      analysis_context: shapMutation.data || limeMutation.data || counterfactualMutation.data || {},
+    });
+  };
 
   const isAnyLoading = shapMutation.isPending || limeMutation.isPending || counterfactualMutation.isPending;
   const hasResults = shapMutation.data || limeMutation.data || counterfactualMutation.data;
+  const analysisCommentary =
+    shapMutation.data?.commentary ||
+    limeMutation.data?.commentary ||
+    counterfactualMutation.data?.commentary;
 
   return (
     <DashboardLayout>
@@ -195,6 +207,21 @@ export default function ExplainabilityPage() {
                       {counterfactualMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : "Counterfactual"}
                     </CyberButton>
                   </div>
+
+                  <div className="space-y-3 border-t border-border/50 pt-4">
+                    <label className="text-[11px] uppercase tracking-widest text-muted font-semibold">
+                      Ask Explainability AI (Live)
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={assistantQuestion}
+                      onChange={(e) => setAssistantQuestion(e.target.value)}
+                      className="w-full bg-background border border-border/60 rounded-lg px-3 py-2 text-sm text-text-primary focus:border-primary/50 outline-none transition-all resize-none"
+                    />
+                    <CyberButton onClick={runAssistant} className="w-full" size="sm">
+                      Ask for Explanation
+                    </CyberButton>
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -226,6 +253,17 @@ export default function ExplainabilityPage() {
                   )}
 
                   <div className="space-y-6">
+                    {analysisCommentary && (
+                      <div className="border border-border/60 bg-background/50 p-4 rounded-lg text-sm text-muted">
+                        {analysisCommentary}
+                      </div>
+                    )}
+                    {assistantMutation.data?.answer && (
+                      <div className="border border-border/60 bg-background/50 p-4 rounded-lg text-sm text-muted space-y-2">
+                        <p>{assistantMutation.data.answer}</p>
+                        {assistantMutation.data.comment && <p className="text-xs">{assistantMutation.data.comment}</p>}
+                      </div>
+                    )}
                     {/* SHAP Results */}
                     {shapMutation.data?.top_features && (
                       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-3">
@@ -342,6 +380,11 @@ export default function ExplainabilityPage() {
               <div className="col-span-2 p-6 flex flex-col justify-center">
                 {proxyMutation.data ? (
                   <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
+                    {proxyMutation.data.commentary && (
+                      <div className="border border-border/60 bg-background/50 p-4 rounded-lg text-sm text-muted">
+                        {proxyMutation.data.commentary}
+                      </div>
+                    )}
                     <div>
                       <div className="flex items-end justify-between mb-2">
                         <span className="text-xs uppercase tracking-widest text-text-secondary font-bold">Overall Risk Index</span>
