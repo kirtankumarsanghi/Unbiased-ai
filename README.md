@@ -1,255 +1,519 @@
-# EquiAudit
+# Unbiased AI (Previously EquiAudit)
 
-EquiAudit is a full-stack AI fairness auditing platform with a cyber-style operations dashboard.
-It helps teams monitor model behavior, run fairness audits, manage interventions, and generate compliance-style reports.
+Unbiased AI is a next-generation AI governance and unbiased decision intelligence platform designed for both enterprises and everyday users.
 
-## Table of Contents
-- [What This Project Does](#what-this-project-does)
-- [Tech Stack](#tech-stack)
+The platform combines:
+- AI fairness auditing
+- explainable AI
+- real-time governance monitoring
+- unbiased decision support
+- misinformation detection
+- fairness intervention systems
+- compliance reporting
+- transparent reasoning systems
+
+Unlike traditional AI dashboards that only audit machine learning systems, Unbiased AI also helps regular people make:
+- fair decisions
+- evidence-based choices
+- unbiased comparisons
+- less emotionally manipulated decisions
+- transparent and explainable judgments
+
+The platform acts as:
+- a futuristic AI command center
+- an AI governance operating system
+- an unbiased reasoning assistant
+- a fairness monitoring platform
+- a decision intelligence ecosystem
+
+---
+
+# Table of Contents
+
+- [Core Vision](#core-vision)
+- [Key Features](#key-features)
+- [Everyday AI Features](#everyday-ai-features)
+- [Enterprise AI Governance Features](#enterprise-ai-governance-features)
 - [System Architecture](#system-architecture)
-- [How The Website Works](#how-the-website-works)
-- [Backend API Overview](#backend-api-overview)
+- [Tech Stack](#tech-stack)
+- [Frontend Architecture](#frontend-architecture)
+- [Backend Architecture](#backend-architecture)
+- [Authentication System](#authentication-system)
+- [Realtime Infrastructure](#realtime-infrastructure)
 - [Project Structure](#project-structure)
-- [Prerequisites](#prerequisites)
-- [Environment Configuration](#environment-configuration)
-- [Run The Project](#run-the-project)
-- [Testing](#testing)
-- [Docker and Deployment Assets](#docker-and-deployment-assets)
-- [Current State and Limitations](#current-state-and-limitations)
-- [Roadmap Ideas](#roadmap-ideas)
+- [Environment Variables](#environment-variables)
+- [Run Locally](#run-locally)
+- [Docker Setup](#docker-setup)
+- [Kubernetes Deployment](#kubernetes-deployment)
+- [Monitoring Stack](#monitoring-stack)
+- [Current Platform Status](#current-platform-status)
+- [Production Roadmap](#production-roadmap)
+- [Known Limitations](#known-limitations)
+- [Future Vision](#future-vision)
 
-## What This Project Does
-EquiAudit provides:
-- model registry operations (list, upload, fetch, delete)
-- audit execution and fairness metric retrieval
-- intervention enable/disable workflows
-- compliance report generation and download
-- alert and audit-log monitoring views
-- websocket channel for real-time messaging (`/ws`)
-- Prometheus scrape endpoint (`/metrics`)
+---
 
-Primary use cases include fairness monitoring in domains like hiring, lending, healthcare, and risk scoring.
+# Core Vision
 
-## Tech Stack
+Most modern AI systems:
+- amplify confirmation bias
+- manipulate engagement
+- provide one-sided suggestions
+- hide uncertainty
+- reinforce social influence
+- prioritize popularity over accuracy
 
-### Frontend
+Unbiased AI is designed to solve this problem.
+
+The platform focuses on:
+- transparent reasoning
+- balanced perspectives
+- explainable outputs
+- fairness validation
+- evidence-based recommendations
+- ethical AI governance
+
+The platform serves two ecosystems:
+
+1. Public unbiased decision intelligence
+2. Enterprise AI governance and fairness operations
+
+---
+
+# Key Features
+
+## Public Intelligence Features
+
+### Unbiased Decision Assistant
+Users can ask:
+- should I buy this?
+- which option is objectively better?
+- should I switch jobs?
+- should I move cities?
+- which college is better?
+- is this investment risky?
+
+The AI:
+- compares both sides
+- explains tradeoffs
+- identifies emotional bias
+- provides balanced reasoning
+- highlights uncertainty
+- explains hidden risks
+
+---
+
+### Social Media Bias Detector
+
+Analyze:
+- tweets
+- YouTube transcripts
+- Reddit posts
+- influencer content
+- political content
+- news articles
+
+Detect:
+- propaganda
+- emotional manipulation
+- rage bait
+- misinformation
+- political framing
+- one-sided narratives
+
+---
+
+### News Balancer
+
+The AI:
+- compares viewpoints
+- identifies bias
+- separates facts from opinions
+- highlights missing context
+- generates neutral summaries
+
+---
+
+### Smart Purchase Intelligence
+
+Compare:
+- laptops
+- phones
+- cars
+- subscriptions
+- software
+- services
+
+The system evaluates:
+- value for money
+- long-term usability
+- hype probability
+- repairability
+- hidden tradeoffs
+
+---
+
+### Career & Education Decision Engine
+
+Analyze:
+- salaries
+- future demand
+- automation risk
+- growth opportunities
+- stress levels
+- ROI
+
+Generate:
+- unbiased career suggestions
+- education comparisons
+- skill gap analysis
+
+---
+
+### Financial Decision Assistant
+
+Evaluate:
+- loans
+- investments
+- insurance
+- subscriptions
+- expenses
+
+Detect:
+- hidden risks
+- misleading offers
+- poor financial tradeoffs
+
+---
+
+### Debate & Argument Analyzer
+
+Analyze:
+- arguments
+- debates
+- discussions
+- online conversations
+
+Detect:
+- logical fallacies
+- weak evidence
+- emotional reasoning
+- confirmation bias
+
+---
+
+# Enterprise AI Governance Features
+
+## AI Model Registry
+
+Manage:
+- model uploads
+- model versions
+- deployment tracking
+- fairness status
+- telemetry streams
+- drift monitoring
+
+---
+
+## Fairness Auditing System
+
+Compute:
+- demographic parity
+- equalized odds
+- disparate impact
+- calibration score
+- subgroup analysis
+
+Visualize:
+- fairness dashboards
+- heatmaps
+- timelines
+- telemetry charts
+
+---
+
+## Explainability Studio
+
+Powered by:
+- SHAP
+- feature importance
+- dependency analysis
+- proxy variable detection
+
+---
+
+## AI Incident Response System
+
+Automatically:
+- detect incidents
+- assign severity
+- trigger alerts
+- create investigation timelines
+- log interventions
+
+---
+
+## Fairness Intervention Engine
+
+Supports:
+- reweighing
+- adversarial debiasing
+- reject-option classification
+- preprocessing mitigation
+
+---
+
+## Policy Engine
+
+Organizations can:
+- define fairness thresholds
+- create deployment rules
+- block unsafe models
+- trigger compliance actions
+
+---
+
+## Compliance & Reporting
+
+Generate:
+- EU AI Act reports
+- GDPR summaries
+- EEOC-aligned exports
+- governance evidence packs
+- downloadable compliance reports
+
+---
+
+# System Architecture
+
+The platform uses a modular microservice-ready architecture.
+
+## Frontend Layer
+Handles:
+- dashboards
+- telemetry
+- charts
+- authentication
+- realtime streams
+- decision interfaces
+- public AI tools
+
+## Backend Layer
+Handles:
+- API routing
+- fairness engines
+- audit orchestration
+- explainability services
+- auth/session management
+- websocket communication
+- reporting pipelines
+
+## Data Layer
+Includes:
+- PostgreSQL
+- Redis
+- audit persistence
+- telemetry caching
+- session storage
+
+## Async Layer
+Uses:
+- Celery
+- Redis queues
+- background audit jobs
+- report generation tasks
+
+## Infrastructure Layer
+Includes:
+- Docker
+- Kubernetes
+- NGINX
+- Prometheus
+- Grafana
+
+---
+
+# Tech Stack
+
+## Frontend
 - React 18
 - TypeScript
 - Vite
 - Tailwind CSS
-- TanStack React Query
+- Framer Motion
 - Zustand
+- React Query
 - Axios
 - Recharts
-- Framer Motion
 
-### Backend
+## Backend
 - FastAPI
-- Pydantic
-- SQLAlchemy (models/repository scaffolding present)
+- SQLAlchemy
 - Alembic
-- PostgreSQL (configured in infra)
+- PostgreSQL
 - Redis
 - Celery
-- python-jose + passlib for token/security utilities
-- ML libraries included: NumPy, Pandas, scikit-learn, SHAP
+- WebSockets
+- Pydantic
 
-### Infrastructure / Ops
-- Docker Compose
-- NGINX reverse proxy container
-- Kubernetes manifests (`infrastructure/kubernetes`)
-- Prometheus config
-- Grafana dashboard JSON
+## Infrastructure
+- Docker
+- Kubernetes
+- NGINX
+- Prometheus
+- Grafana
 
-## System Architecture
-High-level flow:
-1. User interacts with React UI (`frontend`).
-2. UI calls REST APIs under `http://localhost:8000/api/v1`.
-3. FastAPI routes process requests and currently rely mainly on in-memory state from `backend/app/data/store.py`.
-4. WebSocket endpoint `/ws` supports broadcast-style real-time messages.
-5. `/metrics` exposes a Prometheus-compatible plain-text metric payload.
-6. Docker/K8s assets provide runtime/deployment scaffolding for Postgres, Redis, backend, frontend, and proxying.
+---
 
-## How The Website Works
+# Frontend Architecture
 
-### 1) Routing and access control
-- Public routes:
-  - `/` landing page
-  - `/login` login page
-- Protected routes (via `ProtectedRoute` + Zustand auth store token):
-  - `/dashboard`
-  - `/dashboard/models`
-  - `/dashboard/audits`
-  - `/dashboard/interventions`
-  - `/dashboard/reports`
-  - `/dashboard/alerts`
-  - `/dashboard/settings`
+The frontend includes:
+- reusable component system
+- cyberpunk command-center UI
+- realtime telemetry widgets
+- dashboard architecture
+- responsive layouts
+- websocket integration
+- route guards
+- session restoration
+- reusable hooks/services
+- animated charts
 
-### 2) Authentication flow
-- Login form calls `POST /api/v1/auth/login`.
-- Backend returns bearer token (`access_token`).
-- Token is stored by frontend token service and attached to outgoing Axios requests.
-- On `401`, frontend clears session and redirects to `/login`.
+Main frontend modules:
+- Dashboard
+- Public Intelligence
+- Models
+- Audits
+- Interventions
+- Reports
+- Alerts
+- Settings
+- Authentication
 
-Note: current backend login is prototype logic that accepts any non-empty email/password.
+---
 
-### 3) Dashboard behavior
-- Dashboard uses React Query to fetch audit logs from `GET /api/v1/audit-logs/`.
-- KPI-style cards and audit terminal feed are rendered from API data.
+# Backend Architecture
 
-### 4) Models workflow
-- Fetch models: `GET /api/v1/models/`
-- Upload model: `POST /api/v1/models/upload` (multipart form-data)
-- View model details: `GET /api/v1/models/{id}`
-- Delete model: `DELETE /api/v1/models/{id}`
+The backend follows:
+- modular FastAPI routing
+- service layer architecture
+- repository pattern
+- websocket manager
+- Redis-backed async tasks
+- session auth architecture
+- RBAC support
 
-### 5) Audits workflow
-- Run audit for a model: `POST /api/v1/audits/run/{model_id}`
-- Fetch audit metrics: `GET /api/v1/audits/{audit_id}/metrics`
-- Metrics currently include demographic parity, equalized odds, and disparate impact.
+Main backend modules:
+- auth
+- models
+- audits
+- interventions
+- reports
+- alerts
+- explainability
+- public intelligence
+- telemetry
+- websocket
 
-### 6) Interventions workflow
-- List interventions: `GET /api/v1/interventions/`
-- Enable intervention: `POST /api/v1/interventions/{model_id}/enable`
-- Disable intervention: `POST /api/v1/interventions/{model_id}/disable`
-- Preview impact: `GET /api/v1/interventions/{model_id}/preview`
+---
 
-### 7) Reports workflow
-- List reports: `GET /api/v1/reports/`
-- Generate report: `POST /api/v1/reports/generate`
-- Download report: `GET /api/v1/reports/{report_id}/download`
+# Authentication System
 
-### 8) Alerts and metrics workflow
-- Alerts: `GET /api/v1/alerts/`
-- Update thresholds: `POST /api/v1/alerts/thresholds`
-- Summary cards data: `GET /api/v1/metrics/summary`
-- Infrastructure metric endpoint: `GET /metrics`
+The platform uses:
+- secure session authentication
+- HTTP-only cookies
+- Redis session persistence
+- role-based access control
+- protected routes
+- secure password hashing
 
-### 9) Real-time channel
-- WebSocket endpoint: `ws://localhost:8000/ws`
-- Current behavior: broadcast incoming text messages to all connected clients.
+Supported flows:
+- signup
+- login
+- logout
+- remember me
+- session restoration
+- organization access
 
-## Backend API Overview
-Base path: `/api/v1`
+Planned:
+- MFA
+- SSO
+- OAuth providers
 
-- Auth: `/auth/login`, `/auth/refresh`
-- Users: `/users/me`
-- Models: `/models`, `/models/{id}`, `/models/upload`
-- Audits: `/audits/run/{model_id}`, `/audits/{audit_id}/metrics`
-- Interventions: `/interventions/*`
-- Reports: `/reports/*`
-- Alerts: `/alerts/*`
-- Audit Logs: `/audit-logs/`
-- Summary Metrics: `/metrics/summary`
+---
 
-Interactive docs:
-- Swagger UI: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
+# Realtime Infrastructure
 
-## Project Structure
+Realtime functionality uses:
+- WebSockets
+- telemetry streams
+- live alerts
+- realtime dashboards
+- audit synchronization
+- live fairness monitoring
 
-```text
-equiaudit/
-  backend/
-    app/
-      api/               # FastAPI routers and route modules
-      core/              # config, security, db/websocket primitives
-      data/store.py      # in-memory state used by active routes
-      models/            # SQLAlchemy models (scaffolding)
-      repositories/      # repository scaffolding
-      schemas/           # Pydantic schemas
-      services/          # fairness/auth/report/etc service modules
-      workers/           # Celery app/tasks
-    tests/               # backend tests
-    requirements.txt
-    Dockerfile
-  frontend/
-    src/
-      app/               # router/providers/stores
-      pages/             # route-level UI screens
-      components/        # reusable UI units
-      services/          # API/auth/websocket clients
-      hooks/             # custom hooks
-      constants/         # shared constants and endpoint config
-      styles/            # global/theme/animation styles
-    public/              # static assets
-    package.json
-  infrastructure/
-    kubernetes/
-    nginx/
-    prometheus/
-    grafana/
-  docker-compose.yml
-  setup.bat
-  quick-start.bat
-  start-all.bat
+---
+
+# Project Structure
+
+```txt
+frontend/
+backend/
+infrastructure/
+
+frontend:
+- pages
+- components
+- hooks
+- services
+- store
+- styles
+- charts
+
+backend:
+- api
+- services
+- repositories
+- schemas
+- models
+- workers
+- websocket
+- utils
+
+infrastructure:
+- docker
+- kubernetes
+- nginx
+- monitoring
 ```
 
-## Prerequisites
-- Python 3.11+
-- Node.js 18+
-- npm
-- Docker Desktop (recommended)
+---
 
-## Environment Configuration
+# Environment Variables
 
-### Backend (`backend/.env`)
+## Frontend
 
 ```env
-APP_NAME=EquiAudit
-APP_VERSION=4.2.0
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/equiaudit
-SECRET_KEY=your-secret-key
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=60
-REDIS_URL=redis://localhost:6379
-```
-
-### Frontend (`frontend/.env`)
-
-```env
-VITE_API_BASE_URL=http://localhost:8000/api/v1
+VITE_API_URL=http://localhost:8000/api/v1
 VITE_WS_URL=ws://localhost:8000/ws
-VITE_APP_NAME=EquiAudit
-VITE_APP_VERSION=4.2.0
+VITE_ENABLE_MOCK_DATA=false
 ```
 
-## Run The Project
+## Backend
 
-### Option A: Windows helper scripts
-From `equiaudit/`:
-
-```bat
-check-system.bat
-setup.bat
-quick-start.bat
+```env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/unbiased_ai
+REDIS_URL=redis://localhost:6379
+SECRET_KEY=change_me
+ENVIRONMENT=development
 ```
 
-Or directly:
+---
 
-```bat
-start-all.bat
-```
+# Run Locally
 
-### Option B: Manual local run
-
-1. Start infra services:
-
-```bash
-docker-compose up -d postgres redis
-```
-
-2. Start backend:
-
-```bash
-cd backend
-python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-3. Start frontend (new terminal):
+## Frontend
 
 ```bash
 cd frontend
@@ -257,68 +521,166 @@ npm install
 npm run dev
 ```
 
-### Local URLs
-- Frontend: `http://localhost:5173`
-- Backend: `http://localhost:8000`
-- API docs: `http://localhost:8000/docs`
-- WebSocket: `ws://localhost:8000/ws`
+Frontend runs on:
+```txt
+http://localhost:5173
+```
 
-## Testing
+---
 
-### Backend tests
+## Backend
 
 ```bash
 cd backend
-python -m pytest
+
+python -m venv venv
+
+source venv/bin/activate
 ```
 
-### Frontend build check
+Windows:
 
 ```bash
-cd frontend
-npm run build
+venv\Scripts\activate
 ```
 
-There is also a Windows validation script:
+Install dependencies:
 
-```bat
-test-installation.bat
+```bash
+pip install -r requirements.txt
 ```
 
-## Docker and Deployment Assets
+Run server:
 
-### Docker Compose services
-Defined in `docker-compose.yml`:
+```bash
+uvicorn app.main:app --reload
+```
+
+Backend runs on:
+```txt
+http://localhost:8000
+```
+
+---
+
+# Docker Setup
+
+Run full stack:
+
+```bash
+docker compose up --build
+```
+
+Services:
 - frontend
 - backend
 - postgres
 - redis
 - nginx
 
-### Kubernetes manifests
-Available in `infrastructure/kubernetes`:
-- namespace
-- backend/frontend deployments and services
-- postgres
-- redis
-- celery worker
+---
+
+# Kubernetes Deployment
+
+Kubernetes manifests included for:
+- frontend deployment
+- backend deployment
+- Redis
+- PostgreSQL
 - ingress
+- namespace
 
-### Monitoring assets
-- Prometheus config: `infrastructure/prometheus/prometheus.yml`
-- Grafana dashboard: `infrastructure/grafana/dashboards/equiaudit-dashboard.json`
+Deploy:
 
-## Current State and Limitations
-- The API architecture is production-style, but many active routes currently use in-memory data from `backend/app/data/store.py`.
-- Auth is currently simplified prototype logic.
-- SQLAlchemy models, repositories, fairness service modules, Celery, and explainability modules are present as scaffolding/extension points.
-- `GET /metrics` currently returns a minimal `equiaudit_up` gauge.
+```bash
+kubectl apply -f infrastructure/kubernetes
+```
 
-## Roadmap Ideas
-- Replace memory store with full PostgreSQL-backed persistence.
-- Add strict credential validation and role-based authorization.
-- Wire fairness services to real model outputs/datasets.
-- Add authenticated/typed WebSocket event channels.
-- Expand Prometheus/Grafana with business and model-health KPIs.
-- Add CI pipeline for linting, tests, and deployment checks.
-- 
+---
+
+# Monitoring Stack
+
+Monitoring includes:
+- Prometheus metrics
+- Grafana dashboards
+- websocket telemetry
+- audit monitoring
+- realtime alerts
+
+---
+
+# Current Platform Status
+
+Current maturity:
+- advanced prototype / pre-production MVP
+
+Implemented:
+- dashboards
+- auth flows
+- fairness auditing
+- model registry
+- realtime infrastructure
+- report generation
+- intervention flows
+
+Partially implemented:
+- explainability studio
+- public intelligence suite
+- policy engine
+- realtime websocket UI
+- advanced telemetry
+
+Planned:
+- predictive fairness analytics
+- incident response workflows
+- advanced compliance automation
+- AI governance scoring
+- simulation lab
+- global telemetry maps
+
+---
+
+# Known Limitations
+
+Current limitations include:
+- some placeholder fairness engines
+- partial websocket integration
+- limited explainability APIs
+- minimal Grafana dashboards
+- incomplete incident workflows
+- incomplete public AI feature coverage
+- limited production hardening
+
+---
+
+# Production Roadmap
+
+High-priority roadmap:
+1. complete public intelligence ecosystem
+2. production-grade explainability engine
+3. websocket telemetry integration
+4. advanced policy engine
+5. AI incident response workflows
+6. predictive fairness analytics
+7. compliance automation
+8. enterprise auth hardening
+9. monitoring improvements
+10. Kubernetes production hardening
+
+---
+
+# Future Vision
+
+The goal of Unbiased AI is to become:
+
+- a trustworthy AI reasoning platform
+- an enterprise AI governance operating system
+- a daily-life unbiased intelligence assistant
+- a transparency-first AI ecosystem
+- a realtime AI fairness command center
+
+The long-term mission is to help:
+- people make better decisions
+- organizations build fairer AI
+- society reduce misinformation and algorithmic bias
+- AI systems become more transparent and accountable.
