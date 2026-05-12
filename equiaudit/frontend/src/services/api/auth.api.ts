@@ -37,35 +37,26 @@ export const authApi = {
     return response.data;
   },
 
-  login: async (
-    payload: LoginPayload
-  ) => {
-    const response =
-      await apiClient.post(
-        "/auth/login",
-        payload
-      );
-
+  login: async (payload: LoginPayload) => {
+    const response = await apiClient.post("/auth/login", payload);
     return response.data;
   },
 
-  refresh: async (
-    refreshToken?: string
-  ) => {
-    const response =
-      await apiClient.post(
-        "/auth/refresh",
-        refreshToken
-          ? {
-              refreshToken,
-            }
-          : {}
-      );
-
+  refresh: async (refreshToken?: string) => {
+    if (isMockEnabled()) {
+      return { user: null };
+    }
+    const response = await apiClient.post(
+      "/auth/refresh",
+      refreshToken ? { refreshToken } : {},
+    );
     return response.data;
   },
 
   logout: async () => {
+    if (isMockEnabled()) {
+      return { message: "Logged out" };
+    }
     const response = await apiClient.post("/auth/logout");
     return response.data;
   },
@@ -84,9 +75,7 @@ export const authApi = {
   },
 
   me: async () => {
-    const response =
-      await apiClient.get("/users/me");
-
+    const response = await apiClient.get("/users/me");
     return response.data;
   },
 };

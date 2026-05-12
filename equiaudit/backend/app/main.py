@@ -13,14 +13,18 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.api.router import api_router
 from app.api.deps.deps import get_current_user_ws
 from app.core.websocket import manager
+from app.core.metrics import MetricsMiddleware, metrics_response
 from app.core.config import settings
 from app.models.ai_model import AIModel
 from app.models.intervention import Intervention
 from app.models.audit_log import AuditLog
 from app.models.user import User
 from app.models.public_analysis import PublicAnalysis
+from app.models.auth_token import AuthToken
+from app.models.alert import AlertIncident, AlertThreshold
 from app.core.security import hash_password
 from app.core.database import engine
+from app.core.database import Base
 
 app = FastAPI(
     title="Unbiased AI API",
@@ -34,6 +38,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(MetricsMiddleware)
 
 app.include_router(
     api_router,
@@ -149,7 +154,11 @@ def seed_initial_data():
 
 
 def ensure_runtime_tables():
+    Base.metadata.create_all(bind=engine)
     PublicAnalysis.__table__.create(bind=engine, checkfirst=True)
+    AuthToken.__table__.create(bind=engine, checkfirst=True)
+    AlertIncident.__table__.create(bind=engine, checkfirst=True)
+    AlertThreshold.__table__.create(bind=engine, checkfirst=True)
 
 
 seed_initial_data()
@@ -207,8 +216,4 @@ async def websocket_channel_endpoint(websocket: WebSocket, channel: str):
 
 @app.get("/metrics", response_class=PlainTextResponse)
 def prometheus_metrics():
-    return (
-        "# HELP equiaudit_up Backend availability\n"
-        "# TYPE equiaudit_up gauge\n"
-        "equiaudit_up 1\n"
-    )
+    return metrics_response()

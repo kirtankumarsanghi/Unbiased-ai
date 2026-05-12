@@ -52,6 +52,12 @@ class FinancialRequest(BaseModel):
     options: list[OptionInput] = Field(min_length=2, max_length=6)
 
 
+class PurchaseRequest(BaseModel):
+    product_category: str = Field(min_length=2, max_length=120)
+    options: list[OptionInput] = Field(min_length=2, max_length=6)
+    priorities: list[str] = Field(default_factory=list)
+
+
 def _normalize(value: float) -> float:
     return max(0.0, min(1.0, round(value, 3)))
 
@@ -314,6 +320,42 @@ async def financial_assistant(
     await manager.broadcast_event(
         "public_analysis.completed",
         {"analysis_id": saved.id, "type": "financial_assistant", "recommended_option": ranked[0]["name"]},
+        channel="public_telemetry",
+    )
+    return result
+
+
+@router.post("/purchase-evaluator")
+async def purchase_evaluator(
+    payload: PurchaseRequest,
+    db: Session = Depends(get_database),
+    user: User = Depends(require_roles("SUPER_ADMIN", "ORG_ADMIN", "ANALYST", "AUDITOR", "API_USER")),
+):
+    scored = []
+    for option in payload.options:
+        value_score = _normalize(option.evidence_score * 0.4 + option.long_term_score * 0.4 + (1 - option.risk_score) * 0.2)
+        hype_probability = _normalize(option.risk_score * 0.5 + (1 - option.evidence_score) * 0.3)
+        scored.append(
+            {
+                "name": option.name,
+                "value_for_money": value_score,
+                "longevity_score": _normalize(option.long_term_score),
+                "repairability_score": _normalize(0.6 + option.long_term_score * 0.2),
+                "hype_probability": hype_probability,
+                "risk_score": option.risk_score,
+            }
+        )
+    scored.sort(key=lambda x: x["value_for_money"], reverse=True)
+    result = {
+        "product_category": payload.product_category,
+        "priorities": payload.priorities,
+        "comparison": scored,
+        "recommended_option": scored[0]["name"],
+    }
+    saved = _save_analysis(db, "purchase_evaluator", payload.model_dump(), result, user)
+    await manager.broadcast_event(
+        "public_analysis.completed",
+        {"analysis_id": saved.id, "type": "purchase_evaluator", "recommended_option": scored[0]["name"]},
         channel="public_telemetry",
     )
     return result

@@ -8,5 +8,6 @@ export const routes = {
   interventions: "/dashboard/interventions",
   reports: "/dashboard/reports",
   alerts: "/dashboard/alerts",
+  explainability: "/dashboard/explainability",
   settings: "/dashboard/settings",
 };

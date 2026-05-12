@@ -13,6 +13,7 @@ import ModelCard from "../../components/dashboard/ModelCard";
 
 import { auditLogsApi } from "../../services/api/auditLogs.api";
 import { modelsApi } from "../../services/api/models.api";
+import { websocketService } from "../../services/websocket/websocket.service";
 import { useNotificationStore } from "../../app/store/notification.store";
 
 import { AuditLog } from "../../types/audit.types";
@@ -88,6 +89,35 @@ export default function DashboardPage() {
     ],
     []
   );
+
+  useEffect(() => {
+    const wsUrl =
+      import.meta.env.VITE_WS_URL ||
+      "ws://localhost:8000/ws";
+    websocketService.connect(wsUrl, (data) => {
+      if (data && typeof data === "object") {
+        const payload = data as {
+          event_type?: string;
+          payload?: { message?: string; severity?: string };
+        };
+        if (payload.event_type && payload.payload?.message) {
+          push({
+            title: payload.event_type.replace(/_/g, " ").toUpperCase(),
+            message: payload.payload.message,
+            severity:
+              payload.payload.severity === "warning" ||
+              payload.payload.severity === "error"
+                ? payload.payload.severity
+                : "info",
+          });
+        }
+      }
+    });
+
+    return () => {
+      websocketService.disconnect();
+    };
+  }, [push]);
 
   useEffect(() => {
     if (isError) {

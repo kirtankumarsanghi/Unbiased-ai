@@ -44,7 +44,8 @@ export const reportsApi = {
   },
 
   downloadReport: async (
-    reportId: string
+    reportId: string,
+    format: "pdf" | "json" | "txt" = "pdf"
   ) => {
     if (isMockEnabled()) {
       return new Blob(
@@ -57,6 +58,7 @@ export const reportsApi = {
         `/reports/${reportId}/download`,
         {
           responseType: "blob",
+          params: { format },
         }
       );
 

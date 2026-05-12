@@ -17,6 +17,8 @@ export const ROUTES = {
 
   ALERTS: "/dashboard/alerts",
 
+  EXPLAINABILITY: "/dashboard/explainability",
+
   PUBLIC_INTELLIGENCE:
     "/dashboard/public-intelligence",
 

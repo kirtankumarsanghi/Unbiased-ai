@@ -31,6 +31,9 @@ const ReportsPage = lazy(
 const AlertsPage = lazy(
   () => import("../../pages/alerts/AlertsPage")
 );
+const ExplainabilityPage = lazy(
+  () => import("../../pages/explainability/ExplainabilityPage")
+);
 const SettingsPage = lazy(
   () => import("../../pages/settings/SettingsPage")
 );
@@ -107,6 +110,16 @@ export const router = createBrowserRouter([
       <ProtectedRoute>
         <RBACRoute route="/dashboard/alerts">
           <AlertsPage />
+        </RBACRoute>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/dashboard/explainability",
+    element: (
+      <ProtectedRoute>
+        <RBACRoute route="/dashboard/explainability">
+          <ExplainabilityPage />
         </RBACRoute>
       </ProtectedRoute>
     ),

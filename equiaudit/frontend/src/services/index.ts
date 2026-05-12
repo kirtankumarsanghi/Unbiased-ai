@@ -11,6 +11,8 @@ export * from "./api/reports.api";
 
 export * from "./api/alerts.api";
 
+export * from "./api/explainability.api";
+
 export * from "./api/users.api";
 
 export * from "./auth/auth.service";

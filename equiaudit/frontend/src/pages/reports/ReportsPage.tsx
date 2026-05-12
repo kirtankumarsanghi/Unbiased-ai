@@ -33,12 +33,15 @@ export default function ReportsPage() {
 
   const reports = Array.isArray(data) ? data : [];
 
-  const handleDownload = async (reportId: string | number) => {
-    const blob = await reportsApi.downloadReport(String(reportId));
+  const handleDownload = async (
+    reportId: string | number,
+    format: "pdf" | "json" | "txt"
+  ) => {
+    const blob = await reportsApi.downloadReport(String(reportId), format);
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `report-${reportId}.txt`;
+    link.download = `report-${reportId}.${format}`;
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -109,9 +112,15 @@ export default function ReportsPage() {
 
                     <CyberButton
                       className="mt-4 h-10"
-                      onClick={() => handleDownload(report.id)}
+                      onClick={() => handleDownload(report.id, "pdf")}
                     >
-                      Download
+                      Download PDF
+                    </CyberButton>
+                    <CyberButton
+                      className="mt-2 h-10"
+                      onClick={() => handleDownload(report.id, "json")}
+                    >
+                      Download JSON
                     </CyberButton>
                   </div>
                 ))}

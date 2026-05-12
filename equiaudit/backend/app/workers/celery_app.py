@@ -1,11 +1,13 @@
 # Celery app
 from celery import Celery
 
+from app.core.config import settings
+
 celery = Celery(
     "equiaudit",
-    broker="redis://redis:6379/0"
+    broker=settings.celery_broker,
 )
 
 celery.conf.update(
-    result_backend="redis://redis:6379/0"
+    result_backend=settings.celery_result_backend,
 )

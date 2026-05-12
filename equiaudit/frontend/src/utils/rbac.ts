@@ -7,6 +7,7 @@ const roleMatrix: Record<string, string[]> = {
     "/dashboard/interventions",
     "/dashboard/reports",
     "/dashboard/alerts",
+    "/dashboard/explainability",
     "/dashboard/public-intelligence",
     "/dashboard/settings",
   ],
@@ -16,6 +17,7 @@ const roleMatrix: Record<string, string[]> = {
     "/dashboard/audits",
     "/dashboard/reports",
     "/dashboard/alerts",
+    "/dashboard/explainability",
     "/dashboard/public-intelligence",
   ],
   AUDITOR: [
@@ -23,6 +25,7 @@ const roleMatrix: Record<string, string[]> = {
     "/dashboard/audits",
     "/dashboard/reports",
     "/dashboard/alerts",
+    "/dashboard/explainability",
     "/dashboard/public-intelligence",
   ],
   API_USER: ["/dashboard", "/dashboard/public-intelligence"],

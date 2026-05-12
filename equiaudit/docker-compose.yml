@@ -23,6 +23,8 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/equiaudit
       - REDIS_URL=redis://redis:6379
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
 
     depends_on:
       postgres:
@@ -34,6 +36,42 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+
+  celery-worker:
+    build:
+      context: ./backend
+
+    command: celery -A app.workers.celery_app.celery worker --loglevel=INFO
+
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/equiaudit
+      - REDIS_URL=redis://redis:6379
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+
+    depends_on:
+      postgres:
+        condition: service_started
+      redis:
+        condition: service_started
+
+  celery-beat:
+    build:
+      context: ./backend
+
+    command: celery -A app.workers.celery_app.celery beat --loglevel=INFO
+
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/equiaudit
+      - REDIS_URL=redis://redis:6379
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+
+    depends_on:
+      postgres:
+        condition: service_started
+      redis:
+        condition: service_started
 
   postgres:
     image: postgres:15
@@ -55,6 +93,26 @@ services:
 
     ports:
       - "6379:6379"
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./infrastructure/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on:
+      - backend
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./infrastructure/grafana/dashboards:/var/lib/grafana/dashboards
+    environment:
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/equiaudit-dashboard.json
+    depends_on:
+      - prometheus
 
   nginx:
     build:

@@ -19,6 +19,9 @@ class Settings(BaseSettings):
 
     REDIS_URL: str
 
+    CELERY_BROKER_URL: str | None = None
+    CELERY_RESULT_BACKEND: str | None = None
+
     FRONTEND_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173"
     COOKIE_SECURE: bool = False
     SESSION_TTL_SECONDS: int = 1800
@@ -40,6 +43,14 @@ class Settings(BaseSettings):
     @property
     def frontend_origins(self) -> list[str]:
         return [origin.strip() for origin in self.FRONTEND_ORIGINS.split(",") if origin.strip()]
+
+    @property
+    def celery_broker(self) -> str:
+        return self.CELERY_BROKER_URL or f"{self.REDIS_URL}/0"
+
+    @property
+    def celery_result_backend(self) -> str:
+        return self.CELERY_RESULT_BACKEND or f"{self.REDIS_URL}/0"
 
     @property
     def is_dev(self) -> bool:

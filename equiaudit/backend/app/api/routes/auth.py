@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+import hashlib
 import secrets
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
@@ -15,6 +16,7 @@ from app.models.organisation import Organisation
 from app.models.refresh_token import RefreshToken
 from app.models.session import UserSession
 from app.models.user import User
+from app.models.auth_token import AuthToken
 from app.services.auth_session_service import AuthSessionService
 
 router = APIRouter()
@@ -46,8 +48,8 @@ class VerifyEmailSchema(BaseModel):
     token: str
 
 
-RESET_TOKENS: dict[str, dict] = {}
-VERIFY_TOKENS: dict[str, dict] = {}
+TOKEN_TYPE_RESET = "reset"
+TOKEN_TYPE_VERIFY = "verify"
 
 
 @router.get("/status")
@@ -64,6 +66,25 @@ def _validate_password(password: str):
         raise HTTPException(status_code=400, detail="Password must include mixed case")
     if not any(ch.isdigit() for ch in password):
         raise HTTPException(status_code=400, detail="Password must include a digit")
+
+
+def _hash_token(token: str) -> str:
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+def _create_token(db: Session, user: User, token_type: str, ttl_minutes: int) -> str:
+    raw = secrets.token_urlsafe(48)
+    token_hash = _hash_token(raw)
+    token = AuthToken(
+        user_id=user.id,
+        token_hash=token_hash,
+        token_type=token_type,
+        expires_at=datetime.now(timezone.utc) + timedelta(minutes=ttl_minutes),
+        used=False,
+    )
+    db.add(token)
+    db.commit()
+    return raw
 
 
 @router.get("/csrf")
@@ -126,8 +147,7 @@ def signup(payload: SignupSchema, request: Request, response: Response, db: Sess
     db.commit()
     db.refresh(user)
 
-    verify_token = secrets.token_urlsafe(48)
-    VERIFY_TOKENS[verify_token] = {"user_id": user.id, "exp": datetime.now(timezone.utc) + timedelta(hours=24)}
+    verify_token = _create_token(db, user, TOKEN_TYPE_VERIFY, ttl_minutes=24 * 60)
 
     auth_payload = AuthSessionService.create_session(db, user, request, remember_me=True)
     AuthSessionService.set_auth_cookies(response, auth_payload)
@@ -230,8 +250,7 @@ def refresh_session(
 def forgot_password(payload: ForgotPasswordSchema, db: Session = Depends(get_database)):
     user = db.query(User).filter(User.email == payload.email).first()
     if user:
-        token = secrets.token_urlsafe(48)
-        RESET_TOKENS[token] = {"user_id": user.id, "exp": datetime.now(timezone.utc) + timedelta(hours=1)}
+        token = _create_token(db, user, TOKEN_TYPE_RESET, ttl_minutes=60)
         return {"message": "Password reset initiated", "reset_token": token}
     return {"message": "If email exists, reset instructions were sent"}
 
@@ -239,30 +258,50 @@ def forgot_password(payload: ForgotPasswordSchema, db: Session = Depends(get_dat
 @router.post("/reset-password")
 def reset_password(payload: ResetPasswordSchema, db: Session = Depends(get_database)):
     _validate_password(payload.new_password)
-    token_data = RESET_TOKENS.get(payload.token)
-    if not token_data or token_data["exp"] < datetime.now(timezone.utc):
+    token_hash = _hash_token(payload.token)
+    token_row = (
+        db.query(AuthToken)
+        .filter(
+            AuthToken.token_hash == token_hash,
+            AuthToken.token_type == TOKEN_TYPE_RESET,
+            AuthToken.used.is_(False),
+            AuthToken.expires_at >= datetime.now(timezone.utc),
+        )
+        .first()
+    )
+    if not token_row:
         raise HTTPException(status_code=400, detail="Invalid or expired reset token")
 
-    user = db.query(User).filter(User.id == token_data["user_id"]).first()
+    user = db.query(User).filter(User.id == token_row.user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     user.password = hash_password(payload.new_password)
+    token_row.used = True
     db.commit()
-    del RESET_TOKENS[payload.token]
     return {"message": "Password reset successful"}
 
 
 @router.post("/verify-email")
 def verify_email(payload: VerifyEmailSchema, db: Session = Depends(get_database)):
-    token_data = VERIFY_TOKENS.get(payload.token)
-    if not token_data or token_data["exp"] < datetime.now(timezone.utc):
+    token_hash = _hash_token(payload.token)
+    token_row = (
+        db.query(AuthToken)
+        .filter(
+            AuthToken.token_hash == token_hash,
+            AuthToken.token_type == TOKEN_TYPE_VERIFY,
+            AuthToken.used.is_(False),
+            AuthToken.expires_at >= datetime.now(timezone.utc),
+        )
+        .first()
+    )
+    if not token_row:
         raise HTTPException(status_code=400, detail="Invalid or expired verification token")
-    user = db.query(User).filter(User.id == token_data["user_id"]).first()
+    user = db.query(User).filter(User.id == token_row.user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     user.email_verified = True
+    token_row.used = True
     db.commit()
-    del VERIFY_TOKENS[payload.token]
     return {"message": "Email verified"}
 
 

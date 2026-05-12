@@ -9,6 +9,7 @@ import {
   Bell,
   Settings,
   Sparkles,
+  Orbit,
 } from "lucide-react";
 
 export const NAVIGATION = [
@@ -71,6 +72,18 @@ export const NAVIGATION = [
     label: "Alerts",
     path: "/dashboard/alerts",
     icon: Bell,
+    allowedRoles: [
+      "SUPER_ADMIN",
+      "ORG_ADMIN",
+      "ANALYST",
+      "AUDITOR",
+    ],
+  },
+
+  {
+    label: "Explainability",
+    path: "/dashboard/explainability",
+    icon: Orbit,
     allowedRoles: [
       "SUPER_ADMIN",
       "ORG_ADMIN",

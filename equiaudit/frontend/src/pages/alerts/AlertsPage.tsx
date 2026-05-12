@@ -7,8 +7,12 @@ import SectionHeader from "../../components/common/SectionHeader";
 import { alertsApi } from "../../services/api/alerts.api";
 
 interface ApiAlert {
+  id?: number;
   severity?: string;
   message?: string;
+  source?: string;
+  status?: string;
+  created_at?: string | null;
 }
 
 const severityStyles: Record<string, string> = {
@@ -66,6 +70,11 @@ export default function AlertsPage() {
                   <p className="mt-2 text-sm">
                     {alert.message || "Alert raised."}
                   </p>
+                  <div className="mt-3 text-xs uppercase tracking-widest text-muted flex flex-wrap gap-4">
+                    <span>{alert.source || "Unknown source"}</span>
+                    <span>{alert.status || "OPEN"}</span>
+                    <span>{alert.created_at || "--"}</span>
+                  </div>
                 </div>
               );
             })}
