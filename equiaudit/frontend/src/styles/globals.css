@@ -3,6 +3,52 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Dark Mode - Premium Command Center */
+    --color-background: 8 8 12;
+    --color-surface: 14 14 20;
+    --color-surface-elevated: 20 20 28;
+    --color-border: 35 35 45;
+    --color-border-light: 45 45 60;
+    
+    --color-text-primary: 240 242 245;
+    --color-text-secondary: 160 165 175;
+    --color-muted: 100 105 115;
+    
+    --color-primary: 0 255 140; /* Neon Emerald */
+    --color-primary-dark: 0 210 110;
+    --color-secondary: 0 200 255; /* Cyan */
+    --color-accent: 180 50 255; /* Magenta */
+    
+    --color-success: 0 230 120;
+    --color-warning: 255 170 0;
+    --color-error: 255 60 60;
+    --color-info: 0 190 255;
+  }
+
+  .light {
+    /* Light Mode - Futuristic AI Laboratory (Premium Apple/Linear aesthetic) */
+    --color-background: 246 248 250; /* Soft futuristic white/grey */
+    --color-surface: 255 255 255; /* Pure white surface */
+    --color-surface-elevated: 255 255 255; 
+    --color-border: 228 232 238; /* Soft blue-grey border */
+    --color-border-light: 210 215 225;
+    
+    --color-text-primary: 15 20 30; /* Near black with blue tint */
+    --color-text-secondary: 90 100 115; /* Professional slate */
+    --color-muted: 130 140 155;
+    
+    --color-primary: 0 145 95; /* Premium Emerald */
+    --color-primary-dark: 0 115 70;
+    --color-secondary: 10 120 210; /* Soft Cyan/Blue */
+    --color-accent: 140 40 220; 
+    
+    --color-success: 10 140 70;
+    --color-warning: 210 110 0;
+    --color-error: 220 40 40;
+    --color-info: 10 120 210;
+  }
+
   * {
     @apply border-border;
   }
