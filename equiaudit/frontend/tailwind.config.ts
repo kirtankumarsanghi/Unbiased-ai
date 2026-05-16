@@ -1,61 +1,94 @@
 import type { Config } from "tailwindcss";
 
-export default {
-  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+const config: Config = {
+  darkMode: "class",
+
+  content: [
+    "./index.html",
+
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+
   theme: {
     extend: {
       colors: {
-        primary: "rgb(var(--color-primary) / <alpha-value>)",
-        "primary-dark": "rgb(var(--color-primary-dark) / <alpha-value>)",
-        secondary: "rgb(var(--color-secondary) / <alpha-value>)",
-        accent: "rgb(var(--color-accent) / <alpha-value>)",
-        background: "rgb(var(--color-background) / <alpha-value>)",
-        surface: "rgb(var(--color-surface) / <alpha-value>)",
-        "surface-elevated": "rgb(var(--color-surface-elevated) / <alpha-value>)",
-        border: "rgb(var(--color-border) / <alpha-value>)",
-        "border-light": "rgb(var(--color-border-light) / <alpha-value>)",
-        muted: "rgb(var(--color-muted) / <alpha-value>)",
-        "text-primary": "rgb(var(--color-text-primary) / <alpha-value>)",
-        "text-secondary": "rgb(var(--color-text-secondary) / <alpha-value>)",
-        success: "rgb(var(--color-success) / <alpha-value>)",
-        warning: "rgb(var(--color-warning) / <alpha-value>)",
-        error: "rgb(var(--color-error) / <alpha-value>)",
-        info: "rgb(var(--color-info) / <alpha-value>)",
+        background: "#0d1513",
+
+        surface: "#19211f",
+
+        "surface-light": "#232c29",
+
+        primary: "#00dfc1",
+
+        "primary-dim": "#26fedc",
+
+        warning: "#ffd651",
+
+        error: "#ffb4ab",
+
+        text: "#dbe5e0",
+
+        muted: "#b9cac4",
+
+        border: "#3a4a46",
       },
+
       fontFamily: {
-        mono: ["JetBrains Mono", "Fira Code", "monospace"],
-        sans: ["Inter", "system-ui", "sans-serif"],
+        sans: ["Space Grotesk", "sans-serif"],
+
+        mono: ["IBM Plex Mono", "monospace"],
       },
+
       boxShadow: {
-        glow: "0 0 20px rgb(var(--color-primary) / 0.3)",
-        "glow-blue": "0 0 20px rgb(var(--color-secondary) / 0.3)",
-        "glow-error": "0 0 20px rgb(var(--color-error) / 0.3)",
+        glow:
+          "0 0 8px rgba(0, 223, 193, 0.4)",
+
+        "glow-lg":
+          "0 0 16px rgba(0, 223, 193, 0.6)",
       },
+
       animation: {
-        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
-        "scan-line": "scan-line 3s linear infinite",
-        "fade-in": "fade-in 0.3s ease-out",
-        "slide-up": "slide-up 0.3s ease-out",
+        marquee:
+          "marquee 20s linear infinite",
+
+        glow:
+          "glowPulse 2s infinite",
       },
+
       keyframes: {
-        "pulse-glow": {
-          "0%, 100%": { opacity: "1" },
-          "50%": { opacity: "0.5" },
+        marquee: {
+          "0%": {
+            transform:
+              "translateX(100%)",
+          },
+
+          "100%": {
+            transform:
+              "translateX(-100%)",
+          },
         },
-        "scan-line": {
-          "0%": { transform: "translateY(-100%)" },
-          "100%": { transform: "translateY(100%)" },
-        },
-        "fade-in": {
-          "0%": { opacity: "0" },
-          "100%": { opacity: "1" },
-        },
-        "slide-up": {
-          "0%": { opacity: "0", transform: "translateY(10px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" },
+
+        glowPulse: {
+          "0%": {
+            boxShadow:
+              "0 0 4px rgba(0,223,193,0.2)",
+          },
+
+          "50%": {
+            boxShadow:
+              "0 0 12px rgba(0,223,193,0.6)",
+          },
+
+          "100%": {
+            boxShadow:
+              "0 0 4px rgba(0,223,193,0.2)",
+          },
         },
       },
     },
   },
+
   plugins: [],
-} satisfies Config;
+};
+
+export default config;

@@ -1,4 +1,6 @@
 import { apiClient } from "./axios";
+import { isMockEnabled } from "./mock";
+import { openAIService } from "../ai/openai.service";
 
 export interface DecisionOption {
   name: string;
@@ -271,41 +273,104 @@ const getMockHistory = () => {
 /* ---------- exported API ---------- */
 export const publicIntelligenceApi = {
   runDecisionAssistant: async (payload: DecisionAssistantPayload) => {
+    if (isMockEnabled()) {
+      const mockResult = await mockDecisionAssistant(payload);
+      const aiReply = await openAIService.analyzeDecision(payload.question, payload.options);
+      return { ...mockResult, assistant_reply: aiReply };
+    }
     const response = await apiClient.post("/public-intelligence/decision-assistant", payload);
     return response.data;
   },
 
   runBiasDetector: async (text: string) => {
+    if (isMockEnabled()) {
+      const mockResult = await mockBiasDetector(text);
+      const aiAnalysis = await openAIService.detectBias(text);
+      return {
+        ...mockResult,
+        manipulation_meter: aiAnalysis.manipulationScore,
+        neutrality_score: aiAnalysis.neutralityScore,
+        assistant_reply: aiAnalysis.analysis,
+      };
+    }
     const response = await apiClient.post("/public-intelligence/bias-detector", { text });
     return response.data;
   },
 
   runDebateAnalyzer: async (text: string) => {
+    if (isMockEnabled()) {
+      const mockResult = await mockDebateAnalyzer(text);
+      const aiReply = await openAIService.generateText(
+        "You are a debate analysis expert. Analyze the logical structure, identify fallacies, and rate argument quality objectively.",
+        `Analyze this text for logical fallacies and argument quality:\n\n"${text}"\n\nProvide a brief assessment.`,
+        { maxTokens: 400, temperature: 0.5 }
+      );
+      return { ...mockResult, assistant_reply: aiReply || "Analysis complete: The text has been evaluated for logical structure and argument quality. See the quantitative scores above for detailed metrics." };
+    }
     const response = await apiClient.post("/public-intelligence/debate-analyzer", { text });
     return response.data;
   },
 
   runNewsBalancer: async (payload: NewsBalancerPayload) => {
+    if (isMockEnabled()) {
+      const mockResult = await mockNewsBalancer(payload);
+      const aiReply = await openAIService.balanceNews(
+        payload.topic,
+        payload.perspective_a,
+        payload.perspective_b
+      );
+      return { ...mockResult, assistant_reply: aiReply };
+    }
     const response = await apiClient.post("/public-intelligence/news-balancer", payload);
     return response.data;
   },
 
   runCareerEngine: async (payload: CareerPayload) => {
+    if (isMockEnabled()) {
+      const mockResult = await mockCareerEngine(payload);
+      const aiReply = await openAIService.generateText(
+        "You are a career advisor. Provide personalized, unbiased career guidance based on skills, interests, and goals. Consider market trends, growth potential, and work-life balance.",
+        `Skills: ${payload.skills.join(", ")}\nInterests: ${payload.interests.join(", ")}\nGoals: ${payload.goals.join(", ")}\nLocation: ${payload.location}\n\nProvide career path recommendations.`,
+        { maxTokens: 500, temperature: 0.6 }
+      );
+      return { ...mockResult, assistant_reply: aiReply || "Career paths generated based on your skill profile, interests, and goals. Consider the growth potential and automation risk scores when evaluating each path." };
+    }
     const response = await apiClient.post("/public-intelligence/career-engine", payload);
     return response.data;
   },
 
   runFinancialAssistant: async (payload: FinancialAssistantPayload) => {
+    if (isMockEnabled()) {
+      const mockResult = await mockFinancialAssistant(payload);
+      const aiReply = await openAIService.generateText(
+        "You are a financial advisor. Analyze financial options objectively, highlighting risks, hidden fees, and long-term implications. Always note that this is educational, not financial advice.",
+        `Scenario: ${payload.scenario}\nOptions: ${payload.options.map((o) => o.name).join(", ")}\n\nProvide a balanced financial analysis.`,
+        { maxTokens: 500, temperature: 0.5 }
+      );
+      return { ...mockResult, assistant_reply: aiReply || "Financial analysis complete. Review the risk radar and net scores above. Note: This is educational analysis, not financial advice." };
+    }
     const response = await apiClient.post("/public-intelligence/financial-assistant", payload);
     return response.data;
   },
 
   runPurchaseEvaluator: async (payload: PurchaseEvaluatorPayload) => {
+    if (isMockEnabled()) {
+      const mockResult = await mockPurchaseEvaluator(payload);
+      const aiReply = await openAIService.generateText(
+        "You are a consumer advisor. Evaluate products objectively based on value, longevity, repairability, and user priorities. Flag potential hype-driven recommendations.",
+        `Product category: ${payload.product_category}\nOptions: ${payload.options.map((o) => o.name).join(", ")}\nPriorities: ${payload.priorities.join(", ")}\n\nProvide a purchase recommendation.`,
+        { maxTokens: 400, temperature: 0.6 }
+      );
+      return { ...mockResult, assistant_reply: aiReply || "Purchase evaluation complete. Compare value-for-money against hype probability scores above for the most objective assessment." };
+    }
     const response = await apiClient.post("/public-intelligence/purchase-evaluator", payload);
     return response.data;
   },
 
   getHistory: async (analysis_type?: string) => {
+    if (isMockEnabled()) {
+      return getMockHistory();
+    }
     const response = await apiClient.get("/public-intelligence/history", {
       params: analysis_type ? { analysis_type } : {},
     });
@@ -313,6 +378,16 @@ export const publicIntelligenceApi = {
   },
 
   askPublicAI: async (payload: PublicAskPayload) => {
+    if (isMockEnabled()) {
+      // Use multi-provider AI service (Gemini → OpenAI → Built-in Intelligence)
+      const answer = await openAIService.askPublicAI(payload.question, payload.context);
+      saveMockHistory("ask_public_ai");
+      return {
+        question: payload.question,
+        answer,
+        comment: `This answer was generated using ${openAIService.getProviderName()}. Verify critical information with authoritative sources.`,
+      };
+    }
     const response = await apiClient.post("/public-intelligence/ask", payload);
     return response.data;
   },
